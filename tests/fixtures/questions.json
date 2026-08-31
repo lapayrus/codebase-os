@@ -1,0 +1,4 @@
+[
+  {"question": "Where is authentication implemented?", "expected_paths": ["auth.py"]},
+  {"question": "Where is an unknown payment pipeline?", "expected_paths": [], "must_abstain": true}
+]
