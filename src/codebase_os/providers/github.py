@@ -8,6 +8,7 @@ import jwt
 
 from ..indexer import RepositoryIndex
 from ..config import Settings
+from ..persistence import PersistentCodebaseService
 from .webhooks import affected_repository_ids
 
 
@@ -146,6 +147,26 @@ class GitHubHttpClient:
                 raise RuntimeError(f"GitHub request failed with status {response.status_code}")
             return response
         raise RuntimeError("GitHub request retries exhausted")
+
+
+class GitHubIngestionWorker:
+    def __init__(self, queue, client: GitHubClient, service: PersistentCodebaseService) -> None:
+        self.queue = queue
+        self.client = client
+        self.service = service
+
+    def run_once(self, tenant_id: str) -> bool:
+        job = self.queue.claim()
+        if job is None:
+            return False
+        try:
+            snapshot = self.client.repository_snapshot(job.repository_id, "")
+            self.service.index_repository(snapshot, tenant_id)
+        except Exception:
+            self.queue.fail(job.delivery_id, job.repository_id)
+            raise
+        self.queue.complete(job.delivery_id, job.repository_id)
+        return True
 
     def repositories_for_event(self, payload: dict) -> list[str]:
         return affected_repository_ids(payload)

@@ -80,6 +80,13 @@ def test_github_push_webhook_enqueues_one_job(monkeypatch):
     )
     assert response.status_code == 202
     assert len(github_jobs.jobs) == before + 1
+    duplicate = TestClient(app).post(
+        "/api/webhooks/github",
+        headers={"x-hub-signature-256": signature, "x-github-event": "push", "x-github-delivery": "d-2"},
+        content=body,
+    )
+    assert duplicate.status_code == 202
+    assert duplicate.json() == {"queued": 0}
     get_settings.cache_clear()
 
 

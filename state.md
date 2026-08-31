@@ -40,7 +40,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 
 ## Current execution checkpoint
 
-- Next action: complete Phase 3 API-level dispatch and live GitHub integration proof.
+- Next action: obtain explicit remote-push authorization, then complete live GitHub integration proof.
 - Last verification: full suite reported `64 passed, 1 warning`; compileall, stub scan, and diff checks succeeded; live
   `/ready` reported all six checks true.
 - Required proof: GitHub installations can authenticate, fetch repositories, and trigger one durable indexing job.
@@ -51,6 +51,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
   ingestion job state.
 - Phase 3 verification: `78 passed, 1 warning`; workspace-local pytest temp directory was required because system temp
   access is denied.
+- Phase 3 worker verification: GitHub jobs claim, index, complete, and retry through durable storage.
 - CI diagnosis: master run `33447826826` failed at pytest because no PostgreSQL service was defined.
 - CI fix branch: `codex-ci-postgres-service`, adding PostgreSQL 17 and `CODEBASEOS_DATABASE_URL` to the job.
 - CI fix commit: `a04e758` is pushed; PR creation awaits `gh auth login` because the stored CLI token returns HTTP 401.

@@ -46,7 +46,8 @@ and a duplicate validated webhook produces one durable ingestion job.
 
 ## Task 5: Expose runtime integration and verify the phase gate
 
-- [ ] Add API-level tests for installation listing, repository snapshot/index dispatch, and duplicate webhooks.
+- [ ] Add API-level tests for installation listing and repository snapshot/index dispatch.
+- [x] Add API-level duplicate webhook coverage.
 - [ ] Add readiness checks that distinguish missing configuration from upstream GitHub failures.
 - [ ] Update operations documentation with GitHub App setup, permissions, retries, and recovery steps.
 - [ ] Update `state.md`, `session-log.md`, and the full roadmap checklist.
