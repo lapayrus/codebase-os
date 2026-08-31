@@ -13,7 +13,7 @@ from .auth import can_access, context_from_request
 from .config import get_settings
 from .model_factory import build_model_provider
 from .persistence import PersistentCodebaseService
-from .providers.webhooks import GitHubWebhookProcessor, IngestionJobQueue, InstallationAccess
+from .providers.webhooks import DurableIngestionQueue, GitHubWebhookProcessor, InstallationAccess
 from .runtime import build_storage, initialize_storage
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
@@ -22,7 +22,7 @@ runtime_storage = build_storage(get_settings())
 initialize_storage(runtime_storage)
 persistent_service = PersistentCodebaseService(runtime_storage, service)
 audit = AuditLog()
-github_jobs = IngestionJobQueue()
+github_jobs = DurableIngestionQueue(runtime_storage)
 github_access = InstallationAccess()
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 

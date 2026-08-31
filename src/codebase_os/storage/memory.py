@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 
 from .records import EvidenceRecord, MemoryRecord, RepositoryRecord
@@ -8,6 +10,7 @@ class InMemoryStore:
         self._repositories: dict[tuple[str, str], RepositoryRecord] = {}
         self._evidence: dict[tuple[str, str], list[EvidenceRecord]] = defaultdict(list)
         self._memories: dict[tuple[str, str], list[MemoryRecord]] = defaultdict(list)
+        self._jobs: dict[tuple[str, str], tuple[IngestionJob, str]] = {}
 
     def save_repository(self, tenant_id: str, repository: RepositoryRecord) -> None:
         self._repositories[(tenant_id, repository.id)] = repository
@@ -50,3 +53,27 @@ class InMemoryStore:
 
     def list_memories(self, tenant_id: str, repository_id: str) -> list[MemoryRecord]:
         return list(self._memories[(tenant_id, repository_id)])
+
+    def enqueue_ingestion_job(self, job: IngestionJob) -> bool:
+        key = (job.delivery_id, job.repository_id)
+        if key in self._jobs:
+            return False
+        self._jobs[key] = (job, "queued")
+        return True
+
+    def claim_ingestion_job(self) -> IngestionJob | None:
+        for key, (job, status) in self._jobs.items():
+            if status in {"queued", "failed"}:
+                self._jobs[key] = (job, "running")
+                return job
+        return None
+
+    def complete_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
+        key = (delivery_id, repository_id)
+        job, _ = self._jobs[key]
+        self._jobs[key] = (job, "completed")
+
+    def fail_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
+        key = (delivery_id, repository_id)
+        job, _ = self._jobs[key]
+        self._jobs[key] = (job, "failed")

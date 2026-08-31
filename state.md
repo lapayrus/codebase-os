@@ -29,22 +29,28 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - PostgreSQL backup/restore and deletion verification succeeded with disposable data.
 - Groq returned HTTP 200 with generated content using the configured model.
 - Running `/ready` reports `api`, `database`, `queue`, `github`, `model`, and `object_storage` as true.
-- Latest test run reported 55 passed; compilation, route, stub, and diff checks succeeded.
+- Phase 3 focused runtime tests pass: GitHub transport, JWT construction, retries, snapshot fixtures, and durable jobs.
 
 ## Open Issues
 
 - The static query index remains an in-memory cache until a later durable index reconstruction phase.
-- GitHub API transport/OAuth, Supabase Storage operations, hosted sessions, durable jobs, and production UI remain.
+- GitHub live installation registration and worker indexing remain for the Phase 3 exit gate.
+- Supabase Storage operations, hosted sessions, and production UI remain in later phases.
 - CI requires a PostgreSQL service because the integration suite now exercises restart persistence.
 
 ## Current execution checkpoint
 
-- Next action: write and approve the Phase 3 GitHub App runtime child plan.
+- Next action: complete Phase 3 API-level dispatch and live GitHub integration proof.
 - Last verification: full suite reported `64 passed, 1 warning`; compileall, stub scan, and diff checks succeeded; live
   `/ready` reported all six checks true.
 - Required proof: GitHub installations can authenticate, fetch repositories, and trigger one durable indexing job.
 - Environment status: local DBngin and Groq are live-tested; GitHub and Supabase need live runtime tests.
 - Phase 2 result: `73 passed, 1 warning`; compileall, package build, stub scan, and `git diff --check` succeeded.
+- Phase 3 branch: `codex-phase-03-github-runtime`.
+- Phase 3 implementation adds `httpx` and `PyJWT`, bounded GitHub transport, recursive snapshot retrieval, and durable
+  ingestion job state.
+- Phase 3 verification: `78 passed, 1 warning`; workspace-local pytest temp directory was required because system temp
+  access is denied.
 - CI diagnosis: master run `33447826826` failed at pytest because no PostgreSQL service was defined.
 - CI fix branch: `codex-ci-postgres-service`, adding PostgreSQL 17 and `CODEBASEOS_DATABASE_URL` to the job.
 - CI fix commit: `a04e758` is pushed; PR creation awaits `gh auth login` because the stored CLI token returns HTTP 401.

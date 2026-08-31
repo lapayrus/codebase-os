@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS audit_events (
     id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, action TEXT NOT NULL, repository_id TEXT,
     request_id TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL
 );
+CREATE TABLE IF NOT EXISTS ingestion_jobs (
+delivery_id TEXT NOT NULL, repository_id TEXT NOT NULL, installation_id BIGINT NOT NULL,
+event_name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued',
+PRIMARY KEY (delivery_id, repository_id)
+);
 """
 
 
@@ -89,6 +94,48 @@ class PostgresStore:
             cursor.execute("SELECT id,repository_id,text,memory_type,created_at,stale FROM memories WHERE tenant_id=%s AND repository_id=%s ORDER BY id", (tenant_id, repository_id))
             rows = cursor.fetchall()
         return [self._memory(row) for row in rows]
+
+    def enqueue_ingestion_job(self, job) -> bool:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO ingestion_jobs (delivery_id,repository_id,installation_id,event_name) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                (job.delivery_id, job.repository_id, job.installation_id, job.event_name),
+            )
+            inserted = cursor.rowcount == 1
+        self.connection.commit()
+        return inserted
+
+    def claim_ingestion_job(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT delivery_id,installation_id,repository_id,event_name FROM ingestion_jobs WHERE status IN ('queued','failed') ORDER BY delivery_id FOR UPDATE SKIP LOCKED LIMIT 1"
+            )
+            row = cursor.fetchone()
+            if row:
+                cursor.execute(
+                    "UPDATE ingestion_jobs SET status='running' WHERE delivery_id=%s AND repository_id=%s",
+                    (row[0], row[2]),
+                )
+        self.connection.commit()
+        if not row:
+            return None
+        from ..providers.webhooks import IngestionJob
+
+        return IngestionJob(row[0], row[1], row[2], row[3])
+
+    def complete_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
+        self._set_job_status(delivery_id, repository_id, "completed")
+
+    def fail_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
+        self._set_job_status(delivery_id, repository_id, "failed")
+
+    def _set_job_status(self, delivery_id: str, repository_id: str, status: str) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE ingestion_jobs SET status=%s WHERE delivery_id=%s AND repository_id=%s",
+                (status, delivery_id, repository_id),
+            )
+        self.connection.commit()
 
     @staticmethod
     def _repository(repository_id, row):

@@ -16,6 +16,9 @@ class Settings(BaseModel):
     github_client_id: str | None = None
     github_client_secret: SecretStr | None = None
     github_callback_url: str | None = None
+    github_api_url: str = "https://api.github.com"
+    github_request_timeout: float = Field(default=15.0, gt=0, le=120)
+    github_retry_count: int = Field(default=2, ge=0, le=5)
     model_provider: str = "none"
     model_api_key: SecretStr | None = None
     model_name: str | None = None
@@ -51,6 +54,9 @@ class Settings(BaseModel):
             "github_client_id": os.getenv("CODEBASEOS_GITHUB_CLIENT_ID"),
             "github_client_secret": os.getenv("CODEBASEOS_GITHUB_CLIENT_SECRET"),
             "github_callback_url": os.getenv("CODEBASEOS_GITHUB_CALLBACK_URL"),
+        "github_api_url": os.getenv("CODEBASEOS_GITHUB_API_URL", "https://api.github.com"),
+        "github_request_timeout": float(os.getenv("CODEBASEOS_GITHUB_REQUEST_TIMEOUT", "15")),
+        "github_retry_count": int(os.getenv("CODEBASEOS_GITHUB_RETRY_COUNT", "2")),
             "model_provider": os.getenv("CODEBASEOS_MODEL_PROVIDER", "none"),
             "model_api_key": os.getenv("CODEBASEOS_MODEL_API_KEY"),
             "model_name": os.getenv("CODEBASEOS_MODEL_NAME"),

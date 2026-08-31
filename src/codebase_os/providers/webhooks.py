@@ -1,7 +1,13 @@
+from __future__ import annotations
+
 import hashlib
 import hmac
 import json
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..storage.ports import Storage
 
 
 @dataclass(frozen=True)
@@ -24,6 +30,27 @@ class IngestionJobQueue:
         self._deliveries.add(key)
         self.jobs.append(job)
         return True
+
+
+class DurableIngestionQueue:
+    def __init__(self, storage: Storage) -> None:
+        self.storage = storage
+        self.jobs: list[IngestionJob] = []
+
+    def enqueue(self, job: IngestionJob) -> bool:
+        inserted = self.storage.enqueue_ingestion_job(job)
+        if inserted:
+            self.jobs.append(job)
+        return inserted
+
+    def claim(self) -> IngestionJob | None:
+        return self.storage.claim_ingestion_job()
+
+    def complete(self, delivery_id: str, repository_id: str) -> None:
+        self.storage.complete_ingestion_job(delivery_id, repository_id)
+
+    def fail(self, delivery_id: str, repository_id: str) -> None:
+        self.storage.fail_ingestion_job(delivery_id, repository_id)
 
 
 class InstallationAccess:

@@ -49,6 +49,13 @@ also checked in development.
 Readiness is a configuration and reachability gate.
 The phase integration tests are the proof for durable writes, restart recovery, and deletion behavior.
 
+GitHub App runtime creates short-lived App JWTs from `CODEBASEOS_GITHUB_APP_ID` and
+`CODEBASEOS_GITHUB_PRIVATE_KEY`, then exchanges them for installation tokens.
+The client paginates repositories, requests recursive trees, skips oversized or binary blobs, and retries bounded
+transient or exhausted-rate-limit responses.
+Webhook deliveries use a `(delivery_id, repository_id)` uniqueness key before indexing work is claimed.
+Failed jobs are retryable, while completed jobs remain recorded for duplicate suppression.
+
 The production readiness check must also verify database, queue, object storage,
 GitHub provider, and model gateway connectivity before accepting indexing work.
 
