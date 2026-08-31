@@ -21,6 +21,9 @@ uv run pytest -q
 uv run uvicorn codebase_os.main:app --reload
 ```
 
+Copy `.env.example` to `.env` and fill in provider credentials before enabling integrations.
+Never commit `.env` or paste private keys and API secrets into source control.
+
 Open `http://127.0.0.1:8000`, then index a repository:
 
 ```powershell

@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field, SecretStr, ValidationError, field_validat
 class Settings(BaseModel):
     environment: str = "development"
     database_url: str = "sqlite:///./codebaseos.db"
+    supabase_url: str | None = None
+    supabase_project_id: str | None = None
+    supabase_publishable_key: SecretStr | None = None
     github_app_id: str | None = None
     github_private_key: SecretStr | None = None
     github_webhook_secret: SecretStr | None = None
@@ -27,6 +30,9 @@ class Settings(BaseModel):
         values = {
             "environment": os.getenv("CODEBASEOS_ENVIRONMENT", "development"),
             "database_url": os.getenv("CODEBASEOS_DATABASE_URL", "sqlite:///./codebaseos.db"),
+            "supabase_url": os.getenv("CODEBASEOS_SUPABASE_URL"),
+            "supabase_project_id": os.getenv("CODEBASEOS_SUPABASE_PROJECT_ID"),
+            "supabase_publishable_key": os.getenv("CODEBASEOS_SUPABASE_PUBLISHABLE_KEY"),
             "github_app_id": os.getenv("CODEBASEOS_GITHUB_APP_ID"),
             "github_private_key": os.getenv("CODEBASEOS_GITHUB_PRIVATE_KEY"),
             "github_webhook_secret": os.getenv("CODEBASEOS_GITHUB_WEBHOOK_SECRET"),
@@ -52,4 +58,3 @@ def validate_settings() -> Settings:
                          "ctx": {"error": "production requires a durable database URL"}}],
         )
     return settings
-

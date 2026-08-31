@@ -22,8 +22,11 @@ Create durable planning and memory artifacts for the CodebaseOS production imple
 - `uv --cache-dir .uv-cache run pytest -q -p no:cacheprovider --basetemp .test-tmp` passes 3 tests.
 - Existing HTTP smoke flow indexes a repository and returns cited evidence.
 - `uv --cache-dir .uv-cache run pytest -q -p no:cacheprovider --basetemp .test-tmp` passes 24 tests.
+- Supabase project `pcxrntpgplvdbvpqycfv` exists in `ap-south-1` on the confirmed $0/month path.
+- Supabase schema tables have RLS enabled and `repository-snapshots` is a private storage bucket.
 
 ## Open Issues
 
 - No git commit exists, so project-map staleness uses timestamps.
-- PostgreSQL, live GitHub App credentials, and model-provider credentials are not configured.
+- Supabase service-role/database credentials and model-provider credentials are not configured.
+- GitHub App values are present in local `.env`; webhook and OAuth routes still need implementation.
