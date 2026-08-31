@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 from .records import EvidenceRecord, MemoryRecord, RepositoryRecord
+
+if TYPE_CHECKING:
+    from ..providers.webhooks import IngestionJob
 
 
 class Storage(Protocol):
@@ -13,6 +18,10 @@ class Storage(Protocol):
     def list_evidence(self, tenant_id: str, repository_id: str) -> list[EvidenceRecord]: ...
     def save_memory(self, tenant_id: str, memory: MemoryRecord) -> None: ...
     def list_memories(self, tenant_id: str, repository_id: str) -> list[MemoryRecord]: ...
+    def enqueue_ingestion_job(self, job: IngestionJob) -> bool: ...
+    def claim_ingestion_job(self) -> IngestionJob | None: ...
+    def complete_ingestion_job(self, delivery_id: str, repository_id: str) -> None: ...
+    def fail_ingestion_job(self, delivery_id: str, repository_id: str) -> None: ...
 
 
 __all__ = ["EvidenceRecord", "MemoryRecord", "RepositoryRecord", "Storage"]
