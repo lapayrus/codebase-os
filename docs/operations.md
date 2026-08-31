@@ -59,6 +59,11 @@ Failed jobs are retryable, while completed jobs remain recorded for duplicate su
 The production readiness check must also verify database, queue, object storage,
 GitHub provider, and model gateway connectivity before accepting indexing work.
 
+Snapshot objects use `tenants/<tenant>/repositories/<owner>/<repo>/<commit>.snapshot` and are never exposed through
+public URLs.
+Hosted Supabase Storage requires a server-side storage key with object insert, select, update, and delete permissions;
+never place that key in browser configuration.
+
 ## Data controls
 
 Repository deletion must remove snapshots, evidence, memories, embeddings, and audit records

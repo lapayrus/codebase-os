@@ -15,12 +15,14 @@ from .model_factory import build_model_provider
 from .persistence import PersistentCodebaseService
 from .providers.webhooks import DurableIngestionQueue, GitHubWebhookProcessor, InstallationAccess
 from .runtime import build_storage, initialize_storage
+from .storage.snapshots import build_snapshot_store
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
 service = CodebaseService()
 runtime_storage = build_storage(get_settings())
 initialize_storage(runtime_storage)
 persistent_service = PersistentCodebaseService(runtime_storage, service)
+snapshot_store = build_snapshot_store(get_settings())
 audit = AuditLog()
 github_jobs = DurableIngestionQueue(runtime_storage)
 github_access = InstallationAccess()
@@ -113,6 +115,8 @@ def delete_repository(repository: str, http_request: Request) -> None:
         raise HTTPException(status_code=403, detail="Repository access denied")
     if repository not in service.repositories:
         raise HTTPException(status_code=404, detail="Unknown repository")
+    commit = service.repositories[repository].commit
+    snapshot_store.delete(context.tenant_id, repository, commit)
     service.repositories.pop(repository)
     service.memories.pop(repository, None)
     runtime_storage.delete_repository(context.tenant_id, repository)
