@@ -42,3 +42,11 @@ Decisions:
 - Provide `CODEBASEOS_DATABASE_URL` at the CI job level so application composition uses PostgreSQL.
 Rejected: Skipping integration tests in CI or silently falling back to in-memory storage.
 Open: Merge the CI service fix through a dedicated pull request.
+
+## 2026-09-01 [saved]
+Goal: Preserve the CI fix handoff after remote PR authentication failed.
+Decisions:
+- Keep the CI service fix on `codex-ci-postgres-service` until its PR is created and merged.
+- Require valid GitHub CLI authentication before creating or merging pull requests.
+Rejected: Bypassing the PR workflow through direct master pushes.
+Open: Run `gh auth login`, then create and merge the CI fix PR.
