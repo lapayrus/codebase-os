@@ -20,6 +20,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 2 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-02-durable-indexing.md`.
 - Phase 1 durable PostgreSQL runtime is complete.
 - Phase 2 durable indexing pipeline is complete.
+- Phase 3 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-03-github-runtime.md`.
 - Current phase is Phase 3, GitHub App runtime integration.
 
 ## Evidence

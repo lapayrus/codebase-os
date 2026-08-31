@@ -50,3 +50,10 @@ Decisions:
 - Require valid GitHub CLI authentication before creating or merging pull requests.
 Rejected: Bypassing the PR workflow through direct master pushes.
 Open: Run `gh auth login`, then create and merge the CI fix PR.
+## 2026-09-01 14:00 [saved]
+Goal: Start Phase 3 GitHub App runtime integration from the merged Phase 2 master state.
+Decisions:
+- Base the phase branch on `master` and keep PR creation and merging with the user.
+- Use a provider-neutral GitHub transport boundary with fixture-backed tests before live calls.
+- Make webhook delivery and ingestion job state durable before wiring repository indexing.
+Open: Implement the Phase 3 child plan and verify the runtime exit gate.
