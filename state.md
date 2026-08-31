@@ -17,6 +17,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Full roadmap design is approved at `docs/specs/2026-09-01-codebaseos-production-roadmap-design.md`.
 - Full roadmap is active at `docs/plans/2026-09-01-codebaseos-full-roadmap.md`.
 - Phase 1 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-01-postgresql-runtime.md`.
+- Phase 2 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-02-durable-indexing.md`.
 - Phase 1 durable PostgreSQL runtime is complete.
 - Current phase is Phase 2, durable indexing pipeline.
 
@@ -36,7 +37,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 
 ## Current execution checkpoint
 
-- Next action: write and approve the Phase 2 durable indexing child plan.
+- Next action: execute the approved Phase 2 durable indexing child plan.
 - Last verification: full suite reported `64 passed, 1 warning`; compileall, stub scan, and diff checks succeeded; live
   `/ready` reported all six checks true.
 - Required proof: re-indexing remains idempotent and changed files replace stale durable evidence.
