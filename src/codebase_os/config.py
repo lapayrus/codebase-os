@@ -30,6 +30,7 @@ class Settings(BaseModel):
     object_storage_secret_key: SecretStr | None = None
     auth_provider: str = "github"
     session_secret: SecretStr | None = None
+    supabase_jwt_secret: SecretStr | None = None
     max_file_bytes: int = Field(default=1_000_000, ge=1_024, le=50_000_000)
     retention_days: int = Field(default=90, ge=1, le=3_650)
 
@@ -68,6 +69,7 @@ class Settings(BaseModel):
             "object_storage_secret_key": os.getenv("CODEBASEOS_OBJECT_STORAGE_SECRET_KEY"),
             "auth_provider": os.getenv("CODEBASEOS_AUTH_PROVIDER", "github"),
             "session_secret": os.getenv("CODEBASEOS_SESSION_SECRET"),
+            "supabase_jwt_secret": os.getenv("CODEBASEOS_SUPABASE_JWT_SECRET"),
             "max_file_bytes": os.getenv("CODEBASEOS_MAX_FILE_BYTES", "1000000"),
             "retention_days": os.getenv("CODEBASEOS_RETENTION_DAYS", "90"),
         }

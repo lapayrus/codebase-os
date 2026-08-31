@@ -37,6 +37,7 @@ Do not delete historical evidence manually while an indexing operation is runnin
 - `CODEBASEOS_GITHUB_APP_ID`, `CODEBASEOS_GITHUB_PRIVATE_KEY`, and
   `CODEBASEOS_GITHUB_WEBHOOK_SECRET` loaded from a secret manager.
 - `CODEBASEOS_RETENTION_DAYS` set to the approved repository retention policy.
+- `CODEBASEOS_SUPABASE_JWT_SECRET` set for hosted JWT verification; keep it server-side.
 
 ## Readiness
 

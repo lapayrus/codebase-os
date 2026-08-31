@@ -21,7 +21,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 1 durable PostgreSQL runtime is complete.
 - Phase 2 durable indexing pipeline is complete.
 - Phase 3 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-03-github-runtime.md`.
-- Current phase is Phase 3, GitHub App runtime integration.
+- Current phase is Phase 6, authentication and tenancy.
 - Phase 3 is merged through PR #5; Phase 4 branch is `codex-phase-04-supabase-storage`.
 - Phase 4 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-04-supabase-storage.md`.
 - Phase 4 snapshot storage slice is implemented with tenant-safe paths, private Supabase REST access, local adapter,
@@ -30,6 +30,9 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 5 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-05-grounded-model-answers.md`.
 - Phase 5 query integration currently connects the model gateway and citation-validates model claims with safe fallback.
 - Phase 5 records model identity in answer and audit metadata without credentials.
+- Phase 5 is merged through PR #7; Phase 6 branch is `codex-phase-06-auth-tenancy`.
+- Phase 6 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-06-auth-tenancy.md`.
+- Phase 6 authentication boundary is implemented with production JWT verification and local-only header auth.
 
 ## Evidence
 
@@ -62,6 +65,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 3 worker verification: GitHub jobs claim, index, complete, and retry through durable storage.
 - Phase 4 verification: `83 passed, 1 warning`; compileall and `git diff --check` passed.
 - Phase 5 verification: `86 passed, 1 warning` before final audit integration; final rerun is required.
+- Phase 6 verification: `89 passed, 3 warnings`; compileall and `git diff --check` passed.
 - Live Groq smoke reached the configured endpoint but returned HTTP 403; local fallback behavior is verified, while
   upstream credential/model authorization remains open.
 - CI diagnosis: master run `33447826826` failed at pytest because no PostgreSQL service was defined.

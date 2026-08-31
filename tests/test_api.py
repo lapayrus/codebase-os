@@ -163,6 +163,15 @@ def test_production_readiness_rejects_sqlite_and_missing_github(monkeypatch):
     get_settings.cache_clear()
 
 
+def test_production_query_requires_bearer_session(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "production")
+    monkeypatch.setenv("CODEBASEOS_SUPABASE_JWT_SECRET", "session-secret")
+    get_settings.cache_clear()
+    response = TestClient(app).post("/api/query", json={"question": "Where is auth?"})
+    assert response.status_code == 401
+    get_settings.cache_clear()
+
+
 def test_readiness_rejects_incomplete_selected_model_provider(monkeypatch):
     monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "development")
     monkeypatch.setenv("CODEBASEOS_MODEL_PROVIDER", "online")
