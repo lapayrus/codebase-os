@@ -35,3 +35,18 @@ Decisions:
 Rejected: Dual-writing local and Supabase databases in one runtime.
 Rejected: Treating readiness configuration checks as proof of end-to-end runtime integration.
 Open: Write and approve the Phase 1 durable PostgreSQL child plan.
+## 2026-09-01 [saved]
+Goal: Make CI execute the PostgreSQL integration suite with the same durable runtime assumption as local development.
+Decisions:
+- Add a PostgreSQL 17 GitHub Actions service because integration tests require restart persistence.
+- Provide `CODEBASEOS_DATABASE_URL` at the CI job level so application composition uses PostgreSQL.
+Rejected: Skipping integration tests in CI or silently falling back to in-memory storage.
+Open: Merge the CI service fix through a dedicated pull request.
+
+## 2026-09-01 [saved]
+Goal: Preserve the CI fix handoff after remote PR authentication failed.
+Decisions:
+- Keep the CI service fix on `codex-ci-postgres-service` until its PR is created and merged.
+- Require valid GitHub CLI authentication before creating or merging pull requests.
+Rejected: Bypassing the PR workflow through direct master pushes.
+Open: Run `gh auth login`, then create and merge the CI fix PR.

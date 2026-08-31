@@ -32,6 +32,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 
 - The static query index remains an in-memory cache until Phase 2 durable index reconstruction.
 - GitHub API transport/OAuth, Supabase Storage operations, hosted sessions, durable jobs, and production UI remain.
+- CI requires a PostgreSQL service because the integration suite now exercises restart persistence.
 
 ## Current execution checkpoint
 
@@ -41,4 +42,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Required proof: re-indexing remains idempotent and changed files replace stale durable evidence.
 - Environment status: local DBngin and Groq are live-tested; GitHub and Supabase need live runtime tests.
 - Phase 1 result: `64 passed`; compileall succeeded; stub scan was clean; `git diff --check` reported no errors.
+- CI diagnosis: master run `33447826826` failed at pytest because no PostgreSQL service was defined.
+- CI fix branch: `codex-ci-postgres-service`, adding PostgreSQL 17 and `CODEBASEOS_DATABASE_URL` to the job.
+- CI fix commit: `a04e758` is pushed; PR creation awaits `gh auth login` because the stored CLI token returns HTTP 401.
 - Secrets are present only in ignored `.env` and are not copied into tracked state or documentation.
