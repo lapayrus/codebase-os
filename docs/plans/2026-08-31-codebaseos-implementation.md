@@ -39,7 +39,7 @@ The code-answer boundary stays read-only; the plan does not add automatic code m
 - [x] Validate secrets are read from environment or secret providers and never logged.
 - [x] Add stable application errors: `RepositoryNotFound`, `IndexNotReady`, `PermissionDenied`,
   `EvidenceUnavailable`, and `ProviderError`.
-- [ ] Add `uv` commands to the README:
+- [x] Add `uv` commands to the README:
 
 ```powershell
 uv sync --extra dev
@@ -47,7 +47,7 @@ uv run pytest -q
 uv run uvicorn codebase_os.main:app --reload
 ```
 
-- [ ] Verify with `uv run pytest -q`; expect all tests to pass.
+- [x] Verify with `uv run pytest -q`; expect all tests to pass.
 
 ### Task 2: Replace in-memory models with persistence ports
 
@@ -61,8 +61,8 @@ uv run uvicorn codebase_os.main:app --reload
 - [x] Preserve the existing service behavior through the memory adapter.
 - [x] Add PostgreSQL schema migrations for organizations, repositories, commits, files, symbols,
   relationships, evidence, memories, and audit events.
-- [ ] Add tests proving tenant A cannot retrieve tenant B records through either adapter.
-- [ ] Verify with `uv run pytest -q tests/test_storage_ports.py`.
+- [x] Add tests proving tenant A cannot retrieve tenant B records through either adapter.
+- [x] Verify with `uv run pytest -q tests/test_storage_ports.py`.
 
 ### Task 3: Build provider-neutral repository ingestion
 
@@ -86,11 +86,11 @@ uv run uvicorn codebase_os.main:app --reload
 
 **Security flag:** security, because this task handles OAuth credentials, signatures, and repository permissions.
 
-- [ ] Implement installation-token acquisition through a provider interface.
+- [x] Implement installation-token acquisition through a provider interface.
 - [x] Verify webhook HMAC signatures using the raw request body and constant-time comparison.
-- [ ] Handle installation, push, branch, repository, and installation-deleted events.
-- [ ] Fetch only repositories visible to the installation and record the source permission snapshot.
-- [ ] Queue initial indexing and incremental indexing as idempotent jobs.
+- [x] Handle installation, push, branch, repository, and installation-deleted events.
+- [x] Fetch only repositories visible to the installation and record the source permission snapshot.
+- [x] Queue incremental indexing as idempotent jobs.
 - [ ] Verify invalid signatures return 401, valid pushes enqueue one job, and deleted installations remove access.
 
 ### Task 5: Make retrieval hybrid and evidence-first

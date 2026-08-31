@@ -29,4 +29,15 @@ Create durable planning and memory artifacts for the CodebaseOS production imple
 
 - No git commit exists, so project-map staleness uses timestamps.
 - Supabase service-role/database credentials and model-provider credentials are not configured.
-- GitHub App values are present in local `.env`; webhook and OAuth routes still need implementation.
+- GitHub App values are present in local `.env`; webhook signature verification and incremental queueing now have
+  an API route, while OAuth and provider HTTP transport remain unimplemented.
+
+## Current execution checkpoint
+
+- Plan: `docs/plans/2026-08-31-codebaseos-implementation.md`.
+- Last completed task: Task 2 persistence ports and tenant isolation proof.
+- Verification: `uv --cache-dir .uv-cache run pytest -q -p no:cacheprovider --basetemp .test-tmp` → 29 passed;
+  `compileall` succeeded; app route count is 13; `git diff --check` reported no diff errors.
+- New facts: `tests/test_storage_ports.py` uses a deterministic fake cursor to exercise `PostgresStore` tenant-bound
+  queries without requiring a live database; same repository IDs remain isolated by tenant.
+- Next state: address remaining release-gate gaps, starting with production readiness and durable deletion checks.

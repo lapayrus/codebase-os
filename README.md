@@ -16,7 +16,7 @@ uvicorn codebase_os.main:app --reload
 The supported project workflow uses `uv`:
 
 ```powershell
-uv sync --extra dev
+uv sync --locked --extra dev
 uv run pytest -q
 uv run uvicorn codebase_os.main:app --reload
 ```

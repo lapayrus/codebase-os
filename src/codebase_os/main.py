@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import uuid
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -9,10 +10,14 @@ from .models import MemoryRequest, QueryRequest
 from .service import CodebaseService
 from .audit import AuditLog
 from .auth import can_access, context_from_request
+from .config import get_settings
+from .providers.webhooks import GitHubWebhookProcessor, IngestionJobQueue, InstallationAccess
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
 service = CodebaseService()
 audit = AuditLog()
+github_jobs = IngestionJobQueue()
+github_access = InstallationAccess()
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
@@ -29,6 +34,26 @@ def index(path: str, name: str | None = None) -> dict:
         return {"name": repo.name, "commit": repo.commit, "files": len(repo.files), "symbols": len(repo.symbols)}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/webhooks/github", status_code=202)
+async def github_webhook(request: Request) -> dict[str, int]:
+    secret = get_settings().github_webhook_secret
+    if secret is None:
+        raise HTTPException(status_code=503, detail="GitHub webhook integration is not configured")
+    body = await request.body()
+    processor = GitHubWebhookProcessor(secret.get_secret_value(), github_jobs, github_access)
+    try:
+        return processor.handle(
+            body,
+            request.headers.get("x-hub-signature-256", ""),
+            request.headers.get("x-github-event", ""),
+            request.headers.get("x-github-delivery", ""),
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+    except (ValueError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid GitHub webhook payload") from exc
 
 
 @app.get("/api/repositories")
