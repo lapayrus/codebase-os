@@ -39,6 +39,7 @@ class FakeCursor:
     def __init__(self, connection):
         self.connection = connection
         self.rows = []
+        self.rowcount = 0
 
     def __enter__(self):
         return self
@@ -47,8 +48,11 @@ class FakeCursor:
         return False
 
     def execute(self, query, params=None):
+        self.rowcount = 0
         if query.startswith("INSERT INTO repositories"):
             self.connection.repositories[(params[0], params[1])] = params
+        elif query.startswith("DELETE FROM repositories"):
+            self.rowcount = int(self.connection.repositories.pop((params[0], params[1]), None) is not None)
         elif query.startswith("SELECT"):
             tenant_id, repository_id = params
             self.rows = [
@@ -83,3 +87,27 @@ def test_postgres_store_isolates_same_repository_id_by_tenant():
     assert store.get_repository("tenant-a", "shared").name == "tenant-a-copy"
     assert store.get_repository("tenant-b", "shared").name == "tenant-b-copy"
     assert store.get_repository("tenant-a", "tenant-b-only") is None
+
+
+def test_memory_delete_cascades_owned_data_without_cross_tenant_deletion():
+    store = InMemoryStore()
+    store.save_repository("tenant-a", repository("shared"))
+    store.save_repository("tenant-b", repository("shared"))
+    store.save_evidence("tenant-a", EvidenceRecord("a-evidence", "shared", "abc123", "main.py", 1, 1, "x", "source"))
+
+    store.delete_repository("tenant-a", "shared")
+
+    assert store.get_repository("tenant-a", "shared") is None
+    assert store.list_evidence("tenant-a", "shared") == []
+    assert store.get_repository("tenant-b", "shared") is not None
+
+
+def test_postgres_delete_is_tenant_scoped():
+    connection = FakeConnection()
+    store = PostgresStore(connection)
+    store.save_repository("tenant-a", repository("shared"))
+    store.save_repository("tenant-b", repository("shared"))
+
+    assert store.delete_repository("tenant-a", "shared") is True
+    assert store.get_repository("tenant-a", "shared") is None
+    assert store.get_repository("tenant-b", "shared") is not None

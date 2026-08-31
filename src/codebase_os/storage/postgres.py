@@ -44,6 +44,16 @@ class PostgresStore:
             return None
         return self._repository(repository_id, row)
 
+    def delete_repository(self, tenant_id, repository_id):
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM evidence WHERE tenant_id=%s AND repository_id=%s", (tenant_id, repository_id))
+            cursor.execute("DELETE FROM memories WHERE tenant_id=%s AND repository_id=%s", (tenant_id, repository_id))
+            cursor.execute("DELETE FROM audit_events WHERE tenant_id=%s AND repository_id=%s", (tenant_id, repository_id))
+            cursor.execute("DELETE FROM repositories WHERE tenant_id=%s AND id=%s", (tenant_id, repository_id))
+            deleted = cursor.rowcount > 0
+        self.connection.commit()
+        return deleted
+
     def list_repositories(self, tenant_id):
         with self.connection.cursor() as cursor:
             cursor.execute("SELECT id,name,provider,branch,commit,indexed_at FROM repositories WHERE tenant_id=%s ORDER BY id", (tenant_id,))

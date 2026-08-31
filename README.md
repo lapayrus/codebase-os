@@ -18,7 +18,7 @@ The supported project workflow uses `uv`:
 ```powershell
 uv sync --locked --extra dev
 uv run pytest -q
-uv run uvicorn codebase_os.main:app --reload
+uv run uvicorn codebase_os.main:app --reload --env-file .env
 ```
 
 Copy `.env.example` to `.env` and fill in provider credentials before enabling integrations.

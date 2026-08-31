@@ -43,3 +43,110 @@ def test_github_push_webhook_enqueues_one_job(monkeypatch):
     assert response.status_code == 202
     assert len(github_jobs.jobs) == before + 1
     get_settings.cache_clear()
+
+
+def test_memory_read_rejects_repository_outside_access_header(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+    service.add_repository(index_repository(str(tmp_path), "private-memory"))
+    service.add_memory("private-memory", "internal detail", "gotcha")
+    response = TestClient(app).get(
+        "/api/memories/private-memory",
+        headers={"x-repository-access": "other"},
+    )
+    assert response.status_code == 403
+    service.repositories.pop("private-memory", None)
+    service.memories.pop("private-memory", None)
+
+
+def test_repository_list_filters_repositories_outside_access_header(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+    service.add_repository(index_repository(str(tmp_path), "private-list"))
+    response = TestClient(app).get(
+        "/api/repositories",
+        headers={"x-repository-access": "other"},
+    )
+    assert response.status_code == 200
+    assert response.json() == []
+    service.repositories.pop("private-list", None)
+
+
+def test_repository_delete_requires_access_and_removes_local_data(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+    service.add_repository(index_repository(str(tmp_path), "deletable"))
+    service.add_memory("deletable", "temporary detail", "gotcha")
+
+    denied = TestClient(app).delete(
+        "/api/repositories/deletable",
+        headers={"x-repository-access": "other"},
+    )
+    assert denied.status_code == 403
+
+    deleted = TestClient(app).delete(
+        "/api/repositories/deletable",
+        headers={"x-repository-access": "deletable"},
+    )
+    assert deleted.status_code == 204
+    assert "deletable" not in service.repositories
+    assert "deletable" not in service.memories
+
+
+def test_readiness_reports_local_dependencies_ready(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "development")
+    get_settings.cache_clear()
+    response = TestClient(app).get("/ready")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ready"
+    assert response.json()["checks"] == {
+        "api": True, "database": True, "queue": True, "github": True,
+        "model": True, "object_storage": True,
+    }
+    get_settings.cache_clear()
+
+
+def test_production_readiness_rejects_sqlite_and_missing_github(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "production")
+    monkeypatch.setenv("CODEBASEOS_DATABASE_URL", "sqlite:///local.db")
+    monkeypatch.delenv("CODEBASEOS_GITHUB_APP_ID", raising=False)
+    monkeypatch.delenv("CODEBASEOS_GITHUB_PRIVATE_KEY", raising=False)
+    monkeypatch.delenv("CODEBASEOS_GITHUB_WEBHOOK_SECRET", raising=False)
+    get_settings.cache_clear()
+    response = TestClient(app).get("/ready")
+    assert response.status_code == 503
+    assert response.json()["status"] == "not_ready"
+    assert response.json()["checks"]["database"] is False
+    assert response.json()["checks"]["github"] is False
+    get_settings.cache_clear()
+
+
+def test_readiness_rejects_incomplete_selected_model_provider(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "development")
+    monkeypatch.setenv("CODEBASEOS_MODEL_PROVIDER", "online")
+    monkeypatch.delenv("CODEBASEOS_MODEL_API_KEY", raising=False)
+    monkeypatch.setenv("CODEBASEOS_MODEL_NAME", "online-model")
+    monkeypatch.setenv("CODEBASEOS_MODEL_BASE_URL", "https://models.example/v1")
+    get_settings.cache_clear()
+
+    response = TestClient(app).get("/ready")
+
+    assert response.status_code == 503
+    assert response.json()["checks"]["model"] is False
+    get_settings.cache_clear()
+
+
+def test_readiness_accepts_configured_supabase_storage(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "development")
+    monkeypatch.setenv("CODEBASEOS_OBJECT_STORAGE_PROVIDER", "supabase")
+    monkeypatch.setenv("CODEBASEOS_OBJECT_STORAGE_BUCKET", "repository-snapshots")
+    monkeypatch.setenv("CODEBASEOS_SUPABASE_URL", "https://project.supabase.co")
+    monkeypatch.setenv("CODEBASEOS_SUPABASE_PROJECT_ID", "project")
+    monkeypatch.setenv("CODEBASEOS_SUPABASE_PUBLISHABLE_KEY", "publishable")
+    monkeypatch.delenv("CODEBASEOS_OBJECT_STORAGE_ENDPOINT", raising=False)
+    monkeypatch.delenv("CODEBASEOS_OBJECT_STORAGE_ACCESS_KEY", raising=False)
+    monkeypatch.delenv("CODEBASEOS_OBJECT_STORAGE_SECRET_KEY", raising=False)
+    get_settings.cache_clear()
+
+    response = TestClient(app).get("/ready")
+
+    assert response.status_code == 200
+    assert response.json()["checks"]["object_storage"] is True
+    get_settings.cache_clear()

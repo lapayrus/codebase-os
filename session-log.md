@@ -25,3 +25,13 @@ Decisions:
 - Keep GitHub credentials local and ignored; never copy secret values into tracked files or chat.
 Rejected: Treating a temporary Cloudflare URL as a permanent deployment endpoint.
 Open: Implement and test GitHub webhook and OAuth callback routes.
+## 2026-09-01 [saved]
+Goal: Establish the full phased roadmap and durable cross-session execution contract.
+Decisions:
+- Use one active PostgreSQL database per environment through `DATABASE_URL` to prevent split-brain persistence.
+- Use DBngin locally and Supabase PostgreSQL for hosted environments to match deployment reality.
+- Treat Supabase Storage as separate private snapshot storage, not a second application database.
+- Execute ten production phases with child plans, verification gates, and `state.md` checkpoints.
+Rejected: Dual-writing local and Supabase databases in one runtime.
+Rejected: Treating readiness configuration checks as proof of end-to-end runtime integration.
+Open: Write and approve the Phase 1 durable PostgreSQL child plan.
