@@ -5,7 +5,7 @@ import json
 from fastapi.testclient import TestClient
 from codebase_os.indexer import index_repository
 from codebase_os.config import get_settings
-from codebase_os.main import app, github_access, github_jobs, service
+from codebase_os.main import app, github_access, github_jobs, runtime_storage, service
 
 
 def test_query_rejects_repository_outside_access_header(tmp_path: Path):
@@ -14,6 +14,30 @@ def test_query_rejects_repository_outside_access_header(tmp_path: Path):
     response = TestClient(app).post('/api/query', headers={'x-repository-access': 'other'}, json={'repository': 'secure', 'question': 'Where is hello?'})
     assert response.status_code == 403
     service.repositories.pop('secure', None)
+
+
+def test_index_route_writes_repository_to_runtime_storage(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+
+    response = TestClient(app).post("/api/repositories/index", params={"path": str(tmp_path), "name": "runtime-repo"})
+
+    assert response.status_code == 200
+    assert runtime_storage.get_repository("local", "runtime-repo") is not None
+    runtime_storage.delete_repository("local", "runtime-repo")
+    service.repositories.pop("runtime-repo", None)
+
+
+def test_delete_route_removes_durable_repository(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+    TestClient(app).post("/api/repositories/index", params={"path": str(tmp_path), "name": "durable-delete"})
+
+    response = TestClient(app).delete(
+        "/api/repositories/durable-delete",
+        headers={"x-repository-access": "durable-delete"},
+    )
+
+    assert response.status_code == 204
+    assert runtime_storage.get_repository("local", "durable-delete") is None
 
 
 def test_github_webhook_invalid_signature_returns_401(monkeypatch):

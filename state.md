@@ -16,7 +16,9 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Model adapter plan is complete at `docs/plans/2026-09-01-model-provider-adapters-implementation.md`.
 - Full roadmap design is approved at `docs/specs/2026-09-01-codebaseos-production-roadmap-design.md`.
 - Full roadmap is active at `docs/plans/2026-09-01-codebaseos-full-roadmap.md`.
-- Current phase is Phase 1, durable PostgreSQL runtime.
+- Phase 1 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-01-postgresql-runtime.md`.
+- Phase 1 durable PostgreSQL runtime is complete.
+- Current phase is Phase 2, durable indexing pipeline.
 
 ## Evidence
 
@@ -28,12 +30,15 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 
 ## Open Issues
 
-- Application persistence is still in-memory until Phase 1 runtime wiring is implemented.
+- The static query index remains an in-memory cache until Phase 2 durable index reconstruction.
 - GitHub API transport/OAuth, Supabase Storage operations, hosted sessions, durable jobs, and production UI remain.
 
 ## Current execution checkpoint
 
-- Next action: write and approve the Phase 1 child implementation plan.
-- Required proof: index, restart, query, and delete data through PostgreSQL while preserving tenant isolation.
-- Environment status: local DBngin and Groq are live-tested; GitHub and Supabase are configured but need live runtime tests.
+- Next action: write and approve the Phase 2 durable indexing child plan.
+- Last verification: full suite reported `64 passed, 1 warning`; compileall, stub scan, and diff checks succeeded; live
+  `/ready` reported all six checks true.
+- Required proof: re-indexing remains idempotent and changed files replace stale durable evidence.
+- Environment status: local DBngin and Groq are live-tested; GitHub and Supabase need live runtime tests.
+- Phase 1 result: `64 passed`; compileall succeeded; stub scan was clean; `git diff --check` reported no errors.
 - Secrets are present only in ignored `.env` and are not copied into tracked state or documentation.

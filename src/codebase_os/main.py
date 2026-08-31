@@ -12,10 +12,15 @@ from .audit import AuditLog
 from .auth import can_access, context_from_request
 from .config import get_settings
 from .model_factory import build_model_provider
+from .persistence import PersistentCodebaseService
 from .providers.webhooks import GitHubWebhookProcessor, IngestionJobQueue, InstallationAccess
+from .runtime import build_storage, initialize_storage
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
 service = CodebaseService()
+runtime_storage = build_storage(get_settings())
+initialize_storage(runtime_storage)
+persistent_service = PersistentCodebaseService(runtime_storage, service)
 audit = AuditLog()
 github_jobs = IngestionJobQueue()
 github_access = InstallationAccess()
@@ -61,10 +66,11 @@ def readiness() -> JSONResponse:
 
 
 @app.post("/api/repositories/index")
-def index(path: str, name: str | None = None) -> dict:
+def index(http_request: Request, path: str, name: str | None = None) -> dict:
     try:
         repo = index_repository(path, name)
-        service.add_repository(repo)
+        context = context_from_request(http_request)
+        persistent_service.add_repository(repo, context.tenant_id)
         return {"name": repo.name, "commit": repo.commit, "files": len(repo.files), "symbols": len(repo.symbols)}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -109,6 +115,7 @@ def delete_repository(repository: str, http_request: Request) -> None:
         raise HTTPException(status_code=404, detail="Unknown repository")
     service.repositories.pop(repository)
     service.memories.pop(repository, None)
+    runtime_storage.delete_repository(context.tenant_id, repository)
     audit.record(context.tenant_id, context.user_id, "repository.delete", repository,
                  http_request.headers.get("x-request-id", str(uuid.uuid4())))
 
@@ -136,7 +143,7 @@ def create_memory(request: MemoryRequest, http_request: Request):
     if request.repository not in service.repositories:
         raise HTTPException(status_code=404, detail="Index the repository before adding memory")
     audit.record(context.tenant_id, context.user_id, "memory.create", request.repository, http_request.headers.get("x-request-id", str(uuid.uuid4())))
-    return service.add_memory(request.repository, request.text, request.memory_type)
+    return persistent_service.add_memory(request.repository, request.text, request.memory_type, context.tenant_id)
 
 
 @app.get("/api/memories/{repository}")
