@@ -15,6 +15,15 @@ class InMemoryStore:
     def get_repository(self, tenant_id: str, repository_id: str) -> RepositoryRecord | None:
         return self._repositories.get((tenant_id, repository_id))
 
+    def delete_repository(self, tenant_id: str, repository_id: str) -> bool:
+        key = (tenant_id, repository_id)
+        if key not in self._repositories:
+            return False
+        del self._repositories[key]
+        self._evidence.pop(key, None)
+        self._memories.pop(key, None)
+        return True
+
     def list_repositories(self, tenant_id: str) -> list[RepositoryRecord]:
         return [record for (owner, _), record in self._repositories.items() if owner == tenant_id]
 
@@ -37,4 +46,3 @@ class InMemoryStore:
 
     def list_memories(self, tenant_id: str, repository_id: str) -> list[MemoryRecord]:
         return list(self._memories[(tenant_id, repository_id)])
-

@@ -26,7 +26,16 @@ class ModelGateway:
     def answer(self, question: str, packet: ContextPacket, evidence: list[Evidence]) -> ModelResponse:
         if self.provider is None:
             return ModelResponse([], ["No model provider configured; showing grounded retrieval evidence."], "none", packet.token_estimate, 0)
-        raw = self.provider.complete(question, packet)
+        try:
+            raw = self.provider.complete(question, packet)
+        except Exception as exc:
+            return ModelResponse(
+                [],
+                [f"Model provider failed ({type(exc).__name__}); showing grounded retrieval evidence."],
+                "none",
+                packet.token_estimate,
+                0,
+            )
         try:
             payload = json.loads(raw)
             claims = [Claim.model_validate(item) for item in payload.get("claims", [])]
@@ -34,4 +43,3 @@ class ModelGateway:
         except (json.JSONDecodeError, TypeError, ValueError) as exc:
             raise ValueError("Model response was not valid structured JSON") from exc
         return ModelResponse(claims, caveats, getattr(self.provider, "name", "custom"), packet.token_estimate, len(raw.split()))
-

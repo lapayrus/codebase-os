@@ -13,8 +13,20 @@ class Settings(BaseModel):
     github_app_id: str | None = None
     github_private_key: SecretStr | None = None
     github_webhook_secret: SecretStr | None = None
+    github_client_id: str | None = None
+    github_client_secret: SecretStr | None = None
+    github_callback_url: str | None = None
     model_provider: str = "none"
     model_api_key: SecretStr | None = None
+    model_name: str | None = None
+    model_base_url: str | None = None
+    object_storage_provider: str = "local"
+    object_storage_bucket: str = "codebaseos-snapshots"
+    object_storage_endpoint: str | None = None
+    object_storage_access_key: SecretStr | None = None
+    object_storage_secret_key: SecretStr | None = None
+    auth_provider: str = "github"
+    session_secret: SecretStr | None = None
     max_file_bytes: int = Field(default=1_000_000, ge=1_024, le=50_000_000)
     retention_days: int = Field(default=90, ge=1, le=3_650)
 
@@ -36,8 +48,20 @@ class Settings(BaseModel):
             "github_app_id": os.getenv("CODEBASEOS_GITHUB_APP_ID"),
             "github_private_key": os.getenv("CODEBASEOS_GITHUB_PRIVATE_KEY"),
             "github_webhook_secret": os.getenv("CODEBASEOS_GITHUB_WEBHOOK_SECRET"),
+            "github_client_id": os.getenv("CODEBASEOS_GITHUB_CLIENT_ID"),
+            "github_client_secret": os.getenv("CODEBASEOS_GITHUB_CLIENT_SECRET"),
+            "github_callback_url": os.getenv("CODEBASEOS_GITHUB_CALLBACK_URL"),
             "model_provider": os.getenv("CODEBASEOS_MODEL_PROVIDER", "none"),
             "model_api_key": os.getenv("CODEBASEOS_MODEL_API_KEY"),
+            "model_name": os.getenv("CODEBASEOS_MODEL_NAME"),
+            "model_base_url": os.getenv("CODEBASEOS_MODEL_BASE_URL"),
+            "object_storage_provider": os.getenv("CODEBASEOS_OBJECT_STORAGE_PROVIDER", "local"),
+            "object_storage_bucket": os.getenv("CODEBASEOS_OBJECT_STORAGE_BUCKET", "codebaseos-snapshots"),
+            "object_storage_endpoint": os.getenv("CODEBASEOS_OBJECT_STORAGE_ENDPOINT"),
+            "object_storage_access_key": os.getenv("CODEBASEOS_OBJECT_STORAGE_ACCESS_KEY"),
+            "object_storage_secret_key": os.getenv("CODEBASEOS_OBJECT_STORAGE_SECRET_KEY"),
+            "auth_provider": os.getenv("CODEBASEOS_AUTH_PROVIDER", "github"),
+            "session_secret": os.getenv("CODEBASEOS_SESSION_SECRET"),
             "max_file_bytes": os.getenv("CODEBASEOS_MAX_FILE_BYTES", "1000000"),
             "retention_days": os.getenv("CODEBASEOS_RETENTION_DAYS", "90"),
         }

@@ -25,3 +25,15 @@ def test_gateway_rejects_malformed_output():
     with pytest.raises(ValueError, match="structured JSON"):
         ModelGateway(Broken()).answer("question", ContextPacket((), 0, 0, "abc"), [])
 
+
+def test_gateway_returns_grounded_fallback_when_provider_fails():
+    class Failing:
+        name = "failing"
+
+        def complete(self, question, packet):
+            raise RuntimeError("provider unavailable")
+
+    response = ModelGateway(Failing()).answer("question", ContextPacket((), 4, 0, "abc"), [])
+    assert response.model == "none"
+    assert response.claims == []
+    assert any("grounded retrieval" in caveat for caveat in response.caveats)
