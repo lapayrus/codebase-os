@@ -12,13 +12,23 @@ from .audit import AuditLog
 from .auth import can_access, context_from_request
 from .config import get_settings
 from .model_factory import build_model_provider
+from .models_gateway import ModelGateway
 from .persistence import PersistentCodebaseService
 from .providers.webhooks import DurableIngestionQueue, GitHubWebhookProcessor, InstallationAccess
 from .runtime import build_storage, initialize_storage
 from .storage.snapshots import build_snapshot_store
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
-service = CodebaseService()
+
+
+def build_runtime_gateway() -> ModelGateway:
+    try:
+        return ModelGateway(build_model_provider(get_settings()))
+    except ValueError:
+        return ModelGateway()
+
+
+service = CodebaseService(build_runtime_gateway())
 runtime_storage = build_storage(get_settings())
 initialize_storage(runtime_storage)
 persistent_service = PersistentCodebaseService(runtime_storage, service)
@@ -131,8 +141,9 @@ def query(request: QueryRequest, http_request: Request):
         repository = request.repository or next(iter(service.repositories), None)
         if repository and not can_access(context, repository):
             raise HTTPException(status_code=403, detail="Repository access denied")
-        audit.record(context.tenant_id, context.user_id, "query", repository, http_request.headers.get("x-request-id", str(uuid.uuid4())))
-        return service.query(request.question, request.repository, request.top_k)
+        answer = service.query(request.question, request.repository, request.top_k)
+        audit.record(context.tenant_id, context.user_id, "query", repository, http_request.headers.get("x-request-id", str(uuid.uuid4())), {"model": answer.model})
+        return answer
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except KeyError as exc:

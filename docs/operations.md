@@ -77,3 +77,6 @@ snippets, secrets, or raw model prompts.
 Set `CODEBASEOS_MODEL_PROVIDER` to `none`, `openai`, `groq`, `cerebras`, `together`, `openrouter`, `openai-compatible`,
 `anthropic`, or `gemini`. Set the API key and model name for every online provider; OpenAI-compatible providers also
 require `CODEBASEOS_MODEL_BASE_URL`. Readiness validates this configuration without calling the provider.
+Query responses include the selected model identifier, and query audit metadata records that identifier without storing
+credentials.
+Provider errors or invalid structured output fall back to citation-grounded retrieval with an explicit caveat.

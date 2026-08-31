@@ -4,14 +4,16 @@ import uuid
 
 from .indexer import RepositoryIndex
 from .models import Answer, Claim, Evidence, Memory
+from .models_gateway import ModelGateway
 from .retrieval.context import build_context_packet
 from .retrieval.validation import validate_claims
 
 
 class CodebaseService:
-    def __init__(self) -> None:
+    def __init__(self, gateway: ModelGateway | None = None) -> None:
         self.repositories: dict[str, RepositoryIndex] = {}
         self.memories: dict[str, list[Memory]] = defaultdict(list)
+        self.gateway = gateway
 
     def add_repository(self, index: RepositoryIndex) -> None:
         self.repositories[index.name] = index
@@ -36,8 +38,22 @@ class CodebaseService:
         claims = validate_claims(self._claims(evidence), evidence)
         answer_text = " ".join(claim.text for claim in claims) or "The repository contains related evidence, but it is not sufficient for a supported conclusion."
         caveats = ["Structural matches identify likely entry points; runtime wiring may add relationships not visible statically."] if any(item.kind == "structure" for item in evidence) else []
+        model = "none"
+        if self.gateway is not None:
+            try:
+                model_response = self.gateway.answer(question, packet, evidence)
+            except ValueError:
+                model_response = None
+                caveats.append("Model response was invalid; showing grounded retrieval evidence.")
+            if model_response is not None:
+                model_claims = validate_claims(model_response.claims, evidence)
+                caveats.extend(model_response.caveats)
+                if model_claims:
+                    claims = model_claims
+                    answer_text = " ".join(claim.text for claim in claims)
+                    model = model_response.model
         return Answer(question=question, answer=answer_text, claims=claims, evidence=evidence, caveats=caveats,
-            repository=index.name, commit=index.commit, tokens_estimate=packet.token_estimate)
+            repository=index.name, commit=index.commit, tokens_estimate=packet.token_estimate, model=model)
 
     def _select(self, repository: str | None) -> RepositoryIndex:
         if repository:

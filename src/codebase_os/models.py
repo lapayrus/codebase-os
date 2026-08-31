@@ -33,6 +33,7 @@ class Answer(BaseModel):
     repository: str
     commit: str
     tokens_estimate: int
+    model: str = "none"
     generated_at: datetime = Field(default_factory=now)
 
 
@@ -57,4 +58,3 @@ class MemoryRequest(BaseModel):
     repository: str
     text: str = Field(min_length=3, max_length=2000)
     memory_type: Literal["decision", "convention", "gotcha", "open_question", "ownership"]
-
