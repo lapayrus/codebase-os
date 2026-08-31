@@ -1,4 +1,5 @@
 import base64
+import json
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -153,10 +154,11 @@ class GitHubHttpClient:
 
 
 class GitHubIngestionWorker:
-    def __init__(self, queue, client: GitHubClient, service: PersistentCodebaseService) -> None:
+    def __init__(self, queue, client: GitHubClient, service: PersistentCodebaseService, snapshot_store=None) -> None:
         self.queue = queue
         self.client = client
         self.service = service
+        self.snapshot_store = snapshot_store
 
     def run_once(self, tenant_id: str) -> bool:
         job = self.queue.claim()
@@ -164,6 +166,9 @@ class GitHubIngestionWorker:
             return False
         try:
             snapshot = self.client.repository_snapshot(job.repository_id, "")
+            if self.snapshot_store is not None:
+                content = json.dumps(snapshot.files, sort_keys=True).encode("utf-8")
+                self.snapshot_store.put(tenant_id, snapshot.name, snapshot.commit, content)
             self.service.index_repository(snapshot, tenant_id)
         except Exception:
             self.queue.fail(job.delivery_id, job.repository_id)
