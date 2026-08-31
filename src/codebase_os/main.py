@@ -70,8 +70,8 @@ def index(http_request: Request, path: str, name: str | None = None) -> dict:
     try:
         repo = index_repository(path, name)
         context = context_from_request(http_request)
-        persistent_service.add_repository(repo, context.tenant_id)
-        return {"name": repo.name, "commit": repo.commit, "files": len(repo.files), "symbols": len(repo.symbols)}
+        decision = persistent_service.index_repository(repo, context.tenant_id)
+        return {"name": repo.name, "commit": repo.commit, "files": len(repo.files), "symbols": len(repo.symbols), "status": decision.value}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

@@ -3,7 +3,7 @@ from dataclasses import replace
 import pytest
 
 from codebase_os.storage.memory import InMemoryStore
-from codebase_os.storage.postgres import PostgresStore
+from codebase_os.storage.postgres import PostgresStore, SCHEMA_SQL
 from codebase_os.storage.records import EvidenceRecord, RepositoryRecord
 
 
@@ -111,3 +111,10 @@ def test_postgres_delete_is_tenant_scoped():
     assert store.delete_repository("tenant-a", "shared") is True
     assert store.get_repository("tenant-a", "shared") is None
     assert store.get_repository("tenant-b", "shared") is not None
+
+
+def test_schema_expands_indexing_columns_without_drop_statements():
+    assert "ALTER TABLE repositories ADD COLUMN IF NOT EXISTS indexing_status" in SCHEMA_SQL
+    assert "ALTER TABLE repositories ADD COLUMN IF NOT EXISTS content_version" in SCHEMA_SQL
+    assert "ALTER TABLE evidence ADD COLUMN IF NOT EXISTS file_hash" in SCHEMA_SQL
+    assert "DROP TABLE" not in SCHEMA_SQL
