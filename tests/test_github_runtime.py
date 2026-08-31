@@ -19,6 +19,14 @@ def test_github_http_client_exchanges_installation_token_and_lists_pages():
     assert calls[2].headers["authorization"] == "token installation-token"
 
 
+def test_github_http_client_lists_app_installations():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=[{"id": 7}])
+
+    client = GitHubHttpClient("app-jwt", transport=httpx.MockTransport(handler))
+    assert client.app_installations() == [{"id": 7}]
+
+
 def test_github_http_client_retries_transient_response():
     attempts = 0
 

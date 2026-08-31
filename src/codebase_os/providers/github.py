@@ -88,6 +88,9 @@ class GitHubHttpClient:
         )
         return response.json()["token"]
 
+    def app_installations(self) -> list[dict]:
+        return self._request("GET", "/app/installations", app_auth=True).json()
+
     def installation_repositories(self, installation_id: int) -> list[dict]:
         token = self.installation_token(installation_id)
         repositories = []
