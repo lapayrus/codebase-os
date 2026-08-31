@@ -38,11 +38,11 @@ background workers, Supabase Storage, or hosted authentication.
 **Security flag:** security.
 **Does NOT cover:** GitHub event delivery, queue leases, or model generation.
 
-- [ ] Write tests proving identical repository content returns `unchanged`, changed content returns `reindex`, and
+- [x] Write tests proving identical repository content returns `unchanged`, changed content returns `reindex`, and
   failed content returns `retry`.
-- [ ] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_indexing.py` and observe the missing-module failure.
-- [ ] Implement `content_version`, `file_hash`, and `IndexDecision` with stable SHA-256 hashing.
-- [ ] Re-run the focused tests and expect all decision tests to pass.
+- [x] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_indexing.py` and observe the missing-module failure.
+- [x] Implement `content_version`, `file_hash`, and `IndexDecision` with stable SHA-256 hashing.
+- [x] Re-run the focused tests and expect all decision tests to pass.
 
 ### Task 2: Add the reversible PostgreSQL schema expansion
 
@@ -51,11 +51,11 @@ modify `tests/test_storage_ports.py`.
 **Security flag:** security.
 **Does NOT cover:** Destructive historical evidence cleanup.
 
-- [ ] Write tests proving schema initialization adds status/version/hash fields without dropping existing rows.
-- [ ] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_storage_ports.py` and observe the missing-field failure.
-- [ ] Add additive `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` statements and preserve existing `SCHEMA_SQL` creation.
-- [ ] Map null legacy status to `succeeded` and keep writes tenant-scoped.
-- [ ] Run the storage suite and expect all tests to pass.
+- [x] Write tests proving schema initialization adds status/version/hash fields without dropping existing rows.
+- [x] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_storage_ports.py` and observe the missing-field failure.
+- [x] Add additive `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` statements and preserve existing `SCHEMA_SQL` creation.
+- [x] Map null legacy status to `succeeded` and keep writes tenant-scoped.
+- [x] Run the storage suite and expect all tests to pass.
 
 ### Task 3: Persist idempotent indexing with safe replacement
 
@@ -63,12 +63,12 @@ modify `tests/test_storage_ports.py`.
 **Security flag:** security.
 **Does NOT cover:** Background execution or cross-process job coordination.
 
-- [ ] Write tests proving the same commit creates no duplicate evidence, a changed commit replaces stale evidence only
+- [x] Write tests proving the same commit creates no duplicate evidence, a changed commit replaces stale evidence only
   after successful writes, and a failed write leaves the prior succeeded version queryable.
-- [ ] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_indexing_integration.py` and observe failure.
-- [ ] Implement transaction-scoped staging, commit/version update, and post-success stale-evidence deletion.
-- [ ] Use disposable tenant and repository IDs; clean every test record in `finally` blocks.
-- [ ] Run the DBngin integration tests and expect all tests to pass.
+- [x] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_indexing_integration.py` and observe failure.
+- [x] Implement transaction-scoped staging, commit/version update, and post-success stale-evidence deletion.
+- [x] Use disposable tenant and repository IDs; clean every test record in `finally` blocks.
+- [x] Run the DBngin integration tests and expect all tests to pass.
 
 ### Task 4: Wire status reporting, operations, and phase verification
 
@@ -77,13 +77,13 @@ modify `tests/test_api.py`.
 **Security flag:** security.
 **Does NOT cover:** User-facing indexing progress UI, which belongs to Phase 8.
 
-- [ ] Write API tests proving unchanged indexing is reported without duplicate writes and failed indexing exposes a
+- [x] Write API tests proving unchanged indexing is reported without duplicate writes and failed indexing exposes a
   retryable status.
-- [ ] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_api.py` and observe failure.
-- [ ] Wire the durable decision and status response into the indexing route without changing query response shape.
-- [ ] Document forward migration, rollback, re-index, and stale-data recovery commands.
-- [ ] Run `rtk uv --cache-dir .uv-cache sync --locked --extra dev`.
-- [ ] Run `rtk uv --cache-dir .uv-cache run pytest -q` and expect zero failures.
-- [ ] Run `rtk uv --cache-dir .uv-cache run python -m compileall -q src`.
-- [ ] Run the source stub scan and `git diff --check`.
-- [ ] Update `state.md` to Phase 3 and record exact verification output.
+- [x] Run `rtk uv --cache-dir .uv-cache run pytest -q tests/test_api.py` and observe failure.
+- [x] Wire the durable decision and status response into the indexing route without changing query response shape.
+- [x] Document forward migration, rollback, re-index, and stale-data recovery commands.
+- [x] Run `rtk uv --cache-dir .uv-cache sync --locked --extra dev`.
+- [x] Run `rtk uv --cache-dir .uv-cache run pytest -q` and expect zero failures.
+- [x] Run `rtk uv --cache-dir .uv-cache run python -m compileall -q src`.
+- [x] Run the source stub scan and `git diff --check`.
+- [x] Update `state.md` to Phase 3 and record exact verification output.

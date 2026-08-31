@@ -37,6 +37,10 @@ class InMemoryStore:
     def list_evidence(self, tenant_id: str, repository_id: str) -> list[EvidenceRecord]:
         return list(self._evidence[(tenant_id, repository_id)])
 
+    def delete_evidence_except_commit(self, tenant_id: str, repository_id: str, commit: str) -> None:
+        key = (tenant_id, repository_id)
+        self._evidence[key] = [item for item in self._evidence[key] if item.commit == commit]
+
     def save_memory(self, tenant_id: str, memory: MemoryRecord) -> None:
         if not self.get_repository(tenant_id, memory.repository_id):
             raise KeyError(memory.repository_id)

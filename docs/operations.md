@@ -16,6 +16,20 @@ Verify restart persistence with `uv run pytest -q tests/test_postgres_integratio
 Hosted environments set `CODEBASEOS_DATABASE_URL` to the Supabase PostgreSQL connection string.
 Only one database URL is active in a running process.
 
+## Indexing migration and recovery
+
+Schema initialization applies additive indexing columns for existing databases.
+It preserves repositories and evidence, and backfills legacy repositories as `succeeded`.
+
+To re-index a repository, call `POST /api/repositories/index` with its path and name.
+An unchanged content version returns `status=unchanged`; changed content returns `status=reindex`.
+
+New evidence is written before evidence from an older commit is removed.
+If indexing fails, the prior succeeded repository version remains available for retrieval.
+
+Rollback disables new indexing writes before removing only the additive indexing columns in a reviewed migration.
+Do not delete historical evidence manually while an indexing operation is running.
+
 ## Required production settings
 
 - `CODEBASEOS_ENVIRONMENT=production`

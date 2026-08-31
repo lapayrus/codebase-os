@@ -27,6 +27,20 @@ def test_index_route_writes_repository_to_runtime_storage(tmp_path: Path):
     service.repositories.pop("runtime-repo", None)
 
 
+def test_index_route_reports_unchanged_content(tmp_path: Path):
+    (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
+    client = TestClient(app)
+    params = {"path": str(tmp_path), "name": "unchanged-repo"}
+
+    client.post("/api/repositories/index", params=params)
+    response = client.post("/api/repositories/index", params=params)
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "unchanged"
+    runtime_storage.delete_repository("local", "unchanged-repo")
+    service.repositories.pop("unchanged-repo", None)
+
+
 def test_delete_route_removes_durable_repository(tmp_path: Path):
     (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
     TestClient(app).post("/api/repositories/index", params={"path": str(tmp_path), "name": "durable-delete"})
