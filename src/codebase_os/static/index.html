@@ -2,9 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CodebaseOS</title>
-  <style>body{font:16px system-ui;margin:0;background:#101217;color:#e9edf5}main{max-width:960px;margin:0 auto;padding:48px 24px}h1{font-size:42px;margin:0 0 8px}p{color:#a8b0c0}.bar{display:flex;align-items:end;gap:10px;margin:28px 0}.bar label{position:absolute;clip:rect(0 0 0 0);height:1px;width:1px;overflow:hidden}input{flex:1;padding:15px;border-radius:8px;border:1px solid #3a4353;background:#191d26;color:white;font-size:16px}button{min-height:48px;padding:0 20px;border:0;border-radius:8px;background:#78a9ff;color:#07101f;font-weight:700}.card{background:#191d26;border:1px solid #30394a;border-radius:10px;padding:20px;margin-top:16px}.claim{margin:12px 0}.ev{font:13px ui-monospace;color:#a8b0c0;background:#11141b;padding:12px;border-radius:6px;white-space:pre-wrap}.tag{color:#78a9ff;font-size:12px}summary{cursor:pointer}@media(max-width:480px){main{padding:32px 16px}h1{font-size:34px}.bar{align-items:stretch;flex-direction:column}button{padding:12px}}</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <title>CodebaseOS · Repository intelligence</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body><main><h1>CodebaseOS</h1><p>Ask your repository. Get an answer you can verify.</p><div class="bar"><label for="q">Question</label><input id="q" placeholder="Where does authentication create a session?"><button type="button">Ask</button></div><div id="out" aria-live="polite"></div></main><script src="/static/app.js"></script></body>
+<body>
+  <a class="skip-link" id="skip-link" href="#workspace">Skip to workspace</a>
+  <header class="topbar">
+    <a class="brand" href="#workspace" aria-label="CodebaseOS home"><span class="brand-mark" aria-hidden="true">▦</span><span>CodebaseOS</span></a>
+    <nav aria-label="Primary navigation"><a class="nav-link active" href="#workspace">Workspace</a><a class="nav-link" href="#evidence-rail">Evidence</a></nav>
+    <div class="session" id="session-status" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span>Session pending</span></div>
+  </header>
+  <main id="workspace" class="shell">
+    <section class="intro" aria-labelledby="page-title"><p class="eyebrow">REPOSITORY INTELLIGENCE / PHASE 08</p><h1 id="page-title">Ask the code.<br><span>Keep the proof.</span></h1><p class="lede">Grounded answers for the repositories your team owns, with every claim tied to source.</p></section>
+    <div class="workspace-grid">
+      <section class="primary-column" aria-label="Repository workspace">
+        <article class="panel repository-panel">
+          <div class="panel-heading"><div><p class="eyebrow">01 / REPOSITORY</p><h2>Choose a source</h2></div><span class="state-label" id="repository-count">Loading repositories</span></div>
+          <div class="repository-controls"><label for="repository-select">Indexed repository</label><select id="repository-select" disabled><option>Loading repositories…</option></select><button class="button secondary" id="delete-repository" type="button" disabled>Delete repository</button></div>
+          <details class="index-details"><summary>Index a local repository</summary><form id="index-form" class="index-form"><label for="repository-path">Repository path</label><div class="inline-form"><input id="repository-path" name="path" required placeholder="C:\\projects\\my-repo"><input id="repository-name" name="name" placeholder="Repository name"><button class="button secondary" type="submit">Index</button></div><p class="helper" id="index-status" role="status" aria-live="polite"></p></form></details>
+        </article>
+        <article class="panel query-panel"><div class="panel-heading"><div><p class="eyebrow">02 / QUESTION</p><h2>What do you need to know?</h2></div><span class="shortcut">ENTER ↵</span></div><form id="query-form"><label for="q">Ask a question about the selected repository</label><textarea id="q" rows="4" placeholder="Where does authentication create a session?" required></textarea><div class="query-actions"><p class="helper">Answers abstain when the repository cannot support a claim.</p><button class="button primary" id="ask-button" type="submit">Ask repository <span aria-hidden="true">↗</span></button></div></form></article>
+        <section id="answer-region" aria-live="polite" aria-busy="false"><div class="empty-state" id="empty-state"><span class="empty-glyph" aria-hidden="true">⌁</span><h2>Your answer will appear here</h2><p>Select a repository, then ask a precise question to start an evidence trail.</p></div></section>
+      </section>
+      <aside class="evidence-rail" id="evidence-rail" aria-labelledby="evidence-title"><div class="rail-heading"><p class="eyebrow">EVIDENCE RAIL</p><h2 id="evidence-title">Trace context</h2></div><div class="rail-block"><span class="rail-label">CURRENT SOURCE</span><strong id="rail-repository">No repository selected</strong><span class="mono" id="rail-commit">—</span></div><div class="rail-block"><span class="rail-label">MEMORIES</span><p id="memory-status">Select a repository to load team context.</p></div><div class="rail-block rail-note"><span class="rail-label">GROUNDING POLICY</span><p>Claims show confidence, caveats, and the exact source span used to answer.</p></div></aside>
+    </div>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
 </html>
