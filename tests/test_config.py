@@ -7,6 +7,7 @@ from codebase_os.config import Settings, get_settings, validate_settings
 def test_settings_read_environment(monkeypatch):
     monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "test")
     monkeypatch.setenv("CODEBASEOS_RETENTION_DAYS", "30")
+    monkeypatch.delenv("CODEBASEOS_MODEL_API_KEY", raising=False)
     settings = Settings.from_env()
     assert settings.environment == "test"
     assert settings.retention_days == 30

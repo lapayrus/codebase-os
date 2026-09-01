@@ -14,8 +14,14 @@ from codebase_os.storage.records import RepositoryRecord
 pytestmark = pytest.mark.integration
 
 
+def local_database_url() -> str:
+    if os.getenv("CI"):
+        return os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos")
+    return "postgresql://postgres@127.0.0.1:5432/codebaseos_utf8"
+
+
 def test_repository_survives_store_recreation():
-    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos")
+    database_url = local_database_url()
     repository_id = f"phase1-restart-{uuid4().hex}"
     settings = Settings(database_url=database_url)
     repository = RepositoryRecord(
@@ -39,7 +45,7 @@ def test_repository_survives_store_recreation():
 
 
 def test_indexing_is_idempotent_and_replaces_old_evidence():
-    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos_utf8")
+    database_url = local_database_url()
     repository_id = f"phase2-index-{uuid4().hex}"
     settings = Settings(database_url=database_url)
     first = RepositoryIndex(repository_id, "C:/repo", "commit-1", files={"main.py": "return 1"})
@@ -58,7 +64,7 @@ def test_indexing_is_idempotent_and_replaces_old_evidence():
 
 
 def test_postgres_accepts_utf8_evidence():
-    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos_utf8")
+    database_url = local_database_url()
     repository_id = f"utf8-index-{uuid4().hex}"
     index = RepositoryIndex(repository_id, "C:/repo", "commit-utf8", files={"docs.md": "Flow → session"})
     storage = build_storage(Settings(database_url=database_url))

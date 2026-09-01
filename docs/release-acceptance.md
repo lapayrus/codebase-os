@@ -16,6 +16,7 @@ uv build --out-dir .release-dist
 Pytest uses a unique workspace-local temporary directory per run to avoid Windows system-temp permission conflicts.
 
 The indexing suite includes UTF-8 repository content such as arrows and other non-ASCII characters.
+Local integration tests target the workspace `codebaseos_utf8` database; CI continues to use its PostgreSQL service URL.
 
 ## Production-like configuration
 

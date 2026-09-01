@@ -2,6 +2,7 @@ from pathlib import Path
 import hashlib
 import hmac
 import json
+from uuid import uuid4
 from fastapi.testclient import TestClient
 from codebase_os.indexer import index_repository
 from codebase_os.config import get_settings
@@ -72,17 +73,18 @@ def test_github_push_webhook_enqueues_one_job(monkeypatch):
     body = json.dumps({"installation": {"id": 7}, "repository": {"full_name": "acme/demo"}}).encode()
     signature = "sha256=" + hmac.new(b"secret", body, hashlib.sha256).hexdigest()
     github_access.grant(7, ["acme/demo"])
-    before = len(github_jobs.jobs)
+    delivery_id = f"d-{uuid4().hex}"
+    before = github_jobs.status().get("queued", 0)
     response = TestClient(app).post(
         "/api/webhooks/github",
-        headers={"x-hub-signature-256": signature, "x-github-event": "push", "x-github-delivery": "d-2"},
+        headers={"x-hub-signature-256": signature, "x-github-event": "push", "x-github-delivery": delivery_id},
         content=body,
     )
     assert response.status_code == 202
-    assert len(github_jobs.jobs) == before + 1
+    assert github_jobs.status().get("queued", 0) == before + 1
     duplicate = TestClient(app).post(
         "/api/webhooks/github",
-        headers={"x-hub-signature-256": signature, "x-github-event": "push", "x-github-delivery": "d-2"},
+        headers={"x-hub-signature-256": signature, "x-github-event": "push", "x-github-delivery": delivery_id},
         content=body,
     )
     assert duplicate.status_code == 202
