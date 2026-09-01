@@ -16,14 +16,38 @@ from .models_gateway import ModelGateway
 from .persistence import PersistentCodebaseService
 from .providers.webhooks import DurableIngestionQueue, GitHubWebhookProcessor, InstallationAccess
 from .runtime import build_storage, initialize_storage
+from .security import RequestGuard
 from .storage.snapshots import build_snapshot_store
 
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
+request_guard = RequestGuard(get_settings().max_request_bytes, get_settings().rate_limit_per_minute)
+
+
+@app.middleware("http")
+async def request_limits(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+        size_error = request_guard.check_size(request.headers.get("content-length") and int(request.headers["content-length"]))
+        if size_error:
+            return JSONResponse(status_code=413, content={"detail": size_error})
+        rate_error = request_guard.check_rate(request_guard.client_key(request))
+        if rate_error:
+            return JSONResponse(status_code=429, content={"detail": rate_error})
+    try:
+        return await call_next(request)
+    except Exception:
+        request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
+        return JSONResponse(status_code=500, content={"detail": "Internal server error", "request_id": request_id})
 
 
 @app.exception_handler(PermissionError)
 async def permission_error_handler(request: Request, exc: PermissionError) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": str(exc)})
+
+
+@app.exception_handler(Exception)
+async def internal_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
+    return JSONResponse(status_code=500, content={"detail": "Internal server error", "request_id": request_id})
 
 
 def build_runtime_gateway() -> ModelGateway:

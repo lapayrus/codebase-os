@@ -32,6 +32,8 @@ class Settings(BaseModel):
     session_secret: SecretStr | None = None
     supabase_jwt_secret: SecretStr | None = None
     max_file_bytes: int = Field(default=1_000_000, ge=1_024, le=50_000_000)
+    max_request_bytes: int = Field(default=2_000_000, ge=1_024, le=50_000_000)
+    rate_limit_per_minute: int = Field(default=60, ge=1, le=10_000)
     retention_days: int = Field(default=90, ge=1, le=3_650)
 
     @field_validator("environment", "model_provider")
@@ -71,6 +73,8 @@ class Settings(BaseModel):
             "session_secret": os.getenv("CODEBASEOS_SESSION_SECRET"),
             "supabase_jwt_secret": os.getenv("CODEBASEOS_SUPABASE_JWT_SECRET"),
             "max_file_bytes": os.getenv("CODEBASEOS_MAX_FILE_BYTES", "1000000"),
+            "max_request_bytes": os.getenv("CODEBASEOS_MAX_REQUEST_BYTES", "2000000"),
+            "rate_limit_per_minute": os.getenv("CODEBASEOS_RATE_LIMIT_PER_MINUTE", "60"),
             "retention_days": os.getenv("CODEBASEOS_RETENTION_DAYS", "90"),
         }
         return cls.model_validate(values)
