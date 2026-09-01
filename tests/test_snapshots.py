@@ -37,6 +37,15 @@ def test_supabase_snapshot_store_uses_private_authenticated_object_api():
     assert all("tenants/tenant/repositories/repo/abc.snapshot" in str(request.url) for request in calls)
 
 
+def test_supabase_snapshot_delete_ignores_missing_object():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(404)
+
+    store = SupabaseSnapshotStore("https://project.supabase.co", "snapshots", "server-key", httpx.MockTransport(handler))
+
+    store.delete("tenant", "repo", "missing")
+
+
 def test_development_without_server_key_falls_back_to_local_snapshot_store():
     store = build_snapshot_store(Settings(
         environment="development",

@@ -75,7 +75,8 @@ class SupabaseSnapshotStore:
 
     def delete(self, tenant_id: str, repository_id: str, commit: str) -> None:
         response = self.client.delete(f"{self.base_url}/object/{self.bucket}/{snapshot_path(tenant_id, repository_id, commit)}", headers=self.headers)
-        self._check(response)
+        if response.status_code != 404:
+            self._check(response)
 
     @staticmethod
     def _check(response: httpx.Response) -> None:
