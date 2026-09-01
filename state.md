@@ -59,6 +59,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 10 external Supabase staging mutation checks remain operator-controlled and are intentionally not automated.
 - Phase 10 automated acceptance is complete: DBngin `2 passed`, full suite `100 passed`, readiness HTTP 200 with all
   checks true, SupabaseSnapshotStore selected, and fresh package artifacts built successfully.
+- The default `uv run pytest -q` command now passes `100` tests by using workspace-local `.pytest-tmp`; the Windows
+  system pytest temp root was inaccessible even with elevation.
 - Phase 10 remaining user-controlled checks are disposable Supabase upload/read/delete, live GitHub delivery, operator
   backup restore, release decision, and production tag.
 

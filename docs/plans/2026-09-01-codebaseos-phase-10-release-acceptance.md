@@ -19,6 +19,7 @@ or high-severity blockers.
 
 - DBngin integration: `2 passed`.
 - Full automated suite: `100 passed`.
+- Exact local command `uv run pytest -q`: `100 passed` after configuring workspace-local `.pytest-tmp`.
 - Production-like `/ready`: HTTP 200 with all checks true.
 - `.env` startup selects `SupabaseSnapshotStore`.
 - Fresh package artifacts build successfully.
