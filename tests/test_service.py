@@ -3,6 +3,17 @@ from codebase_os.indexer import index_repository
 from codebase_os.service import CodebaseService
 
 
+class FailingGateway:
+    provider = object()
+
+    def answer(self, question, packet, evidence):
+        return type("Response", (), {
+            "claims": [],
+            "caveats": ["Model provider failed (ProviderError); showing grounded retrieval evidence."],
+            "model": "none",
+        })()
+
+
 def test_index_and_query(tmp_path: Path):
     (tmp_path / "auth.py").write_text("class AuthService:\n    def create_session(self, user):\n        return save_session(user)\n", encoding="utf-8")
     (tmp_path / "README.md").write_text("Authentication creates a session for a user.", encoding="utf-8")
@@ -25,3 +36,13 @@ def test_memory_is_retrievable(tmp_path: Path):
     result = service.query("What is the staging approval gate?", "demo")
     assert any(e.kind == "memory" for e in result.evidence)
 
+
+def test_provider_failure_abstains_instead_of_promoting_lexical_matches(tmp_path: Path):
+    (tmp_path / "auth.py").write_text("authentication = 'source'\n", encoding="utf-8")
+    service = CodebaseService(FailingGateway())
+    service.add_repository(index_repository(str(tmp_path), "demo"))
+
+    result = service.query("What type of authentication is used?", "demo")
+
+    assert result.claims == []
+    assert "did not return a supported answer" in result.answer

@@ -52,6 +52,9 @@ class CodebaseService:
                     claims = model_claims
                     answer_text = " ".join(claim.text for claim in claims)
                     model = model_response.model
+                elif self.gateway.provider is not None:
+                    claims = []
+                    answer_text = "The model provider did not return a supported answer. Review the cited repository evidence."
         return Answer(question=question, answer=answer_text, claims=claims, evidence=evidence, caveats=caveats,
             repository=index.name, commit=index.commit, tokens_estimate=packet.token_estimate, model=model)
 

@@ -1,12 +1,17 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 import hashlib
+import fnmatch
+import os
 import re
 
 from .models import Evidence
 
 TEXT_EXTENSIONS = {".py", ".js", ".jsx", ".ts", ".tsx", ".go", ".rs", ".java", ".rb", ".php", ".cs", ".md", ".yml", ".yaml", ".json", ".toml", ".sql", ".sh"}
-IGNORED_DIRS = {".git", "node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".next", "coverage"}
+IGNORED_DIRS = {
+    ".git", ".uv-cache", ".phase10-unit-tmp", ".pytest-runs", ".test-tmp", ".pytest-tmp",
+    ".release-dist", "node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".next", "coverage",
+}
 
 
 @dataclass
@@ -51,8 +56,10 @@ class RepositoryIndex:
 
 def _commit_for(root: Path) -> str:
     digest = hashlib.sha1()
+    patterns = _gitignore_patterns(root)
     for path in sorted(root.rglob("*")):
-        if path.is_file() and not any(part in IGNORED_DIRS for part in path.parts):
+        relative = path.relative_to(root).as_posix()
+        if path.is_file() and not _is_ignored(relative, patterns):
             digest.update(str(path.relative_to(root)).encode("utf-8"))
             digest.update(str(path.stat().st_mtime_ns).encode("utf-8"))
             digest.update(str(path.stat().st_size).encode("utf-8"))
@@ -64,18 +71,50 @@ def index_repository(root: str, name: str | None = None) -> RepositoryIndex:
     if not base.is_dir():
         raise ValueError(f"Repository directory does not exist: {root}")
     index = RepositoryIndex(name=name or base.name, root=str(base), commit=_commit_for(base))
-    for path in base.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in TEXT_EXTENSIONS or any(part in IGNORED_DIRS for part in path.parts):
-            continue
-        try:
-            text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
-            continue
-        relative = path.relative_to(base).as_posix()
-        index.files[relative] = text
-        index.symbols.extend(_symbols(relative, text))
-        index.imports[relative] = set(_imports(text))
+    patterns = _gitignore_patterns(base)
+    for current, directories, filenames in os.walk(base):
+        current_path = Path(current)
+        directories[:] = [directory for directory in directories
+                          if not _is_ignored((current_path / directory).relative_to(base).as_posix(), patterns)]
+        for filename in filenames:
+            path = current_path / filename
+            relative = path.relative_to(base).as_posix()
+            if path.suffix.lower() not in TEXT_EXTENSIONS or _is_ignored(relative, patterns):
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            index.files[relative] = text
+            index.symbols.extend(_symbols(relative, text))
+            index.imports[relative] = set(_imports(text))
     return index
+
+
+def _gitignore_patterns(root: Path) -> list[str]:
+    try:
+        lines = (root / ".gitignore").read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        lines = []
+    return [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
+
+
+def _is_ignored(relative: str, patterns: list[str]) -> bool:
+    parts = relative.replace("\\", "/").split("/")
+    ignored = any(part in IGNORED_DIRS for part in parts)
+    target = relative.replace("\\", "/").strip("/")
+    for pattern in patterns:
+        negated = pattern.startswith("!")
+        pattern = pattern[1:] if negated else pattern
+        directory = pattern.endswith("/")
+        pattern = pattern.rstrip("/").lstrip("/")
+        if "/" in pattern:
+            match = fnmatch.fnmatchcase(target, pattern) or (directory and target.startswith(pattern + "/"))
+        else:
+            match = any(fnmatch.fnmatchcase(part, pattern) for part in parts)
+        if match:
+            ignored = not negated
+    return ignored
 
 
 def _symbols(path: str, text: str) -> list[Symbol]:

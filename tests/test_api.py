@@ -153,7 +153,7 @@ def test_readiness_reports_local_dependencies_ready(monkeypatch):
     assert response.status_code == 200
     assert response.json()["status"] == "ready"
     assert response.json()["checks"] == {
-        "api": True, "database": True, "queue": True, "github": True,
+        "api": True, "database_url": "sqlite:///./codebaseos.db", "database": True, "queue": True, "github": True,
         "model": True, "object_storage": True,
     }
     get_settings.cache_clear()

@@ -11,6 +11,21 @@ def test_indexing_accepts_unicode_source_content(tmp_path):
     assert index.files["docs.md"] == "Flow → session"
 
 
+def test_indexing_skips_uv_cache_and_gitignored_paths(tmp_path):
+    (tmp_path / ".gitignore").write_text(".uv-cache/\nignored/\n", encoding="utf-8")
+    (tmp_path / ".uv-cache").mkdir()
+    (tmp_path / ".uv-cache" / "cached.py").write_text("authentication = 'cache'", encoding="utf-8")
+    (tmp_path / "ignored").mkdir()
+    (tmp_path / "ignored" / "ignored.py").write_text("authentication = 'ignored'", encoding="utf-8")
+    (tmp_path / "src.py").write_text("authentication = 'source'", encoding="utf-8")
+
+    index = index_repository(str(tmp_path), "filtered-repo")
+
+    assert "src.py" in index.files
+    assert ".uv-cache/cached.py" not in index.files
+    assert "ignored/ignored.py" not in index.files
+
+
 def test_content_version_is_stable_for_file_order():
     first = content_version({"b.py": "2", "a.py": "1"})
     second = content_version({"a.py": "1", "b.py": "2"})
