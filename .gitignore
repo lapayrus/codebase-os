@@ -5,6 +5,7 @@ __pycache__/
 .uv-cache/
 .test-tmp/
 .pytest-tmp/
+.pytest-runs/
 *.egg-info/
 .env
 .env.testing

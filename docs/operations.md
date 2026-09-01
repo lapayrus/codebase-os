@@ -4,7 +4,7 @@
 
 ```powershell
 uv sync --locked --extra dev
-uv run uvicorn codebase_os.main:app --reload --env-file .env
+uv run uvicorn --app-dir src codebase_os.main:app --reload --env-file .env
 ```
 
 Local runtime persistence uses DBngin PostgreSQL.

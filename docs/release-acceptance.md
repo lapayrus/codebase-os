@@ -13,11 +13,13 @@ uv run python -m compileall -q src
 uv build --out-dir .release-dist
 ```
 
+Pytest uses a unique workspace-local temporary directory per run to avoid Windows system-temp permission conflicts.
+
 The indexing suite includes UTF-8 repository content such as arrows and other non-ASCII characters.
 
 ## Production-like configuration
 
-Start with `uv run uvicorn codebase_os.main:app --env-file .env` and verify only status fields:
+Start with `uv run uvicorn --app-dir src codebase_os.main:app --env-file .env` and verify only status fields:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/ready | ConvertTo-Json
@@ -45,6 +47,8 @@ These checks mutate external state and must be run by an operator with staging s
 | Deletion and retention | Repository cleanup and retention tests | covered by API/retention tests |
 | Browser | Static UI contract and responsive/accessibility checks | covered by UI tests |
 | Recovery | Backup/restore/rollback runbook | documented; operator restore pending |
+
+The `--app-dir src` option is required when running directly from this source checkout on Windows.
 
 ## Release decision
 

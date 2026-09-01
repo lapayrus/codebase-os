@@ -57,6 +57,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 9 verification: full pytest `100 passed`; focused security/config/UI tests `10 passed`; compileall, fresh-output
   package build, JavaScript syntax, stub scan, and diff checks passed.
 - Phase 10 external Supabase staging mutation checks remain operator-controlled and are intentionally not automated.
+- Live local HTTP acceptance succeeded with `uvicorn --app-dir src`: readiness HTTP 200 and indexing HTTP 200 for 1522
+  files and 26872 symbols; the temporary port 8000 server was stopped cleanly.
 - Phase 10 automated acceptance is complete: DBngin `2 passed`, full suite `100 passed`, readiness HTTP 200 with all
   checks true, SupabaseSnapshotStore selected, and fresh package artifacts built successfully.
 - The default `uv run pytest -q` command now passes `100` tests by using workspace-local `.pytest-tmp`; the Windows

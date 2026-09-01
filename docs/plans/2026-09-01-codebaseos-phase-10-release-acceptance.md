@@ -23,4 +23,5 @@ or high-severity blockers.
 - Production-like `/ready`: HTTP 200 with all checks true.
 - `.env` startup selects `SupabaseSnapshotStore`.
 - Fresh package artifacts build successfully.
+- Live local HTTP check with `uvicorn --app-dir src`: readiness HTTP 200 and repository indexing HTTP 200 for 1522 files.
 - Supabase staging mutation and final release tag remain operator-controlled.
