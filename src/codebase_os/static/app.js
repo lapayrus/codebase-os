@@ -78,7 +78,8 @@ async function ask(event) {
   answerRegion.setAttribute('aria-busy', 'true');
   answerRegion.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span><p>Searching structure, source, and memory…</p></div>';
   try {
-    renderAnswer(await request('/api/query', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({question: question.value.trim()})}));
+    const repository = selectedRepository();
+    renderAnswer(await request('/api/query', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({question: question.value.trim(), repository: repository?.name})}));
   } catch (error) {
     answerRegion.innerHTML = `<div class="error-state" role="alert"><span class="empty-glyph" aria-hidden="true">!</span><h2>${escapeHtml(error.message)}</h2><p>Check your session and repository index, then try again.</p></div>`;
   } finally {
@@ -92,7 +93,7 @@ async function indexRepository(event) {
   indexStatus.textContent = 'Indexing repository…';
   const body = new URLSearchParams(new FormData(indexForm));
   try {
-    await request(`/api/repositories/index?${body}`, {method: 'POST'});
+    await request(`/api/repositories/index?${body.toString()}`, {method: 'POST'});
     indexStatus.textContent = 'Repository indexed.';
     await loadRepositories();
   } catch (error) { indexStatus.textContent = error.message; }

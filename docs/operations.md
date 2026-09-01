@@ -37,7 +37,10 @@ Do not delete historical evidence manually while an indexing operation is runnin
 - `CODEBASEOS_GITHUB_APP_ID`, `CODEBASEOS_GITHUB_PRIVATE_KEY`, and
   `CODEBASEOS_GITHUB_WEBHOOK_SECRET` loaded from a secret manager.
 - `CODEBASEOS_RETENTION_DAYS` set to the approved repository retention policy.
+- `CODEBASEOS_MAX_REQUEST_BYTES` and `CODEBASEOS_RATE_LIMIT_PER_MINUTE` set for deployment capacity.
 - `CODEBASEOS_SUPABASE_JWT_SECRET` set for hosted JWT verification; keep it server-side.
+- `CODEBASEOS_OBJECT_STORAGE_ENDPOINT`, `CODEBASEOS_OBJECT_STORAGE_ACCESS_KEY`, and
+  `CODEBASEOS_OBJECT_STORAGE_SECRET_KEY` set for Supabase S3-compatible snapshot storage.
 
 ## Readiness
 
@@ -59,6 +62,32 @@ Failed jobs are retryable, while completed jobs remain recorded for duplicate su
 
 The production readiness check must also verify database, queue, object storage,
 GitHub provider, and model gateway connectivity before accepting indexing work.
+
+API requests under `/api/` are limited by `CODEBASEOS_MAX_REQUEST_BYTES` and
+`CODEBASEOS_RATE_LIMIT_PER_MINUTE`.
+Rejected requests return 413 or 429 without processing their payload.
+Unexpected failures return a generic 500 response with a request ID; internal exception text is not exposed.
+
+## Backup, restore, and rollback
+
+Create a PostgreSQL backup before migrations or retention changes:
+
+```powershell
+pg_dump --format=custom --file=backups\codebaseos-latest.dump $env:CODEBASEOS_DATABASE_URL
+```
+
+Restore only into a stopped, disposable target first, then verify repository counts and a representative evidence span:
+
+```powershell
+pg_restore --clean --if-exists --dbname=$env:CODEBASEOS_DATABASE_URL backups\codebaseos-latest.dump
+uv run pytest -q tests/test_postgres_integration.py -m integration
+```
+
+The application performs additive schema initialization on startup.
+Rollback disables new indexing writes, restores the last verified database backup, and removes only the reviewed
+additive migration after acceptance checks pass.
+Supabase snapshot objects must be retained or restored with the matching database commit records.
+Never run `pg_restore --clean` against production until the backup and target URL have been independently verified.
 
 Snapshot objects use `tenants/<tenant>/repositories/<owner>/<repo>/<commit>.snapshot` and are never exposed through
 public URLs.

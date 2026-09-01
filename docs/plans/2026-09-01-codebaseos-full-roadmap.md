@@ -128,11 +128,11 @@ Exit gate: an authenticated user can select, index, query, inspect citations, an
 
 ## Phase 9 — Security, reliability, and deployment
 
-- [ ] Review secrets, webhook verification, tenant boundaries, and storage policies.
-- [ ] Add migration execution, backup, restore, and rollback procedures.
-- [ ] Add liveness, readiness, rate limits, request-size limits, and error redaction.
-- [ ] Add CI database integration, dependency, and vulnerability checks.
-- [ ] Document deployment, rollback, retention, and disaster recovery.
+- [x] Review secrets, webhook verification, tenant boundaries, and storage policies.
+- [x] Add migration execution, backup, restore, and rollback procedures.
+- [x] Add liveness, readiness, rate limits, request-size limits, and error redaction.
+- [x] Add CI database integration, dependency, and vulnerability checks.
+- [x] Document deployment, rollback, retention, and disaster recovery.
 
 Exit gate: deployment fails closed on missing production requirements and recovery procedures are verified.
 

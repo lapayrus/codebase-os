@@ -21,7 +21,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 1 durable PostgreSQL runtime is complete.
 - Phase 2 durable indexing pipeline is complete.
 - Phase 3 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-03-github-runtime.md`.
-- Current phase is Phase 8, production UI, on branch `codex-phase-08-production-ui`.
+- Current phase is Phase 9, security, reliability, and deployment, on branch
+  `codex-phase-09-security-reliability`.
 - Phase 3 is merged through PR #5; Phase 4 branch is `codex-phase-04-supabase-storage`.
 - Phase 4 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-04-supabase-storage.md`.
 - Phase 4 snapshot storage slice is implemented with tenant-safe paths, private Supabase REST access, local adapter,
@@ -41,6 +42,9 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
   evidence spans, memory context, deletion, loading states, permission errors, responsive layout, and accessibility.
 - Phase 8 startup behavior uses the local snapshot adapter in development when the Supabase server key is absent;
   production still fails closed with `CODEBASEOS_OBJECT_STORAGE_SECRET_KEY` missing.
+- Phase 9 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-09-security-reliability.md`.
+- Phase 9 adds request-size/rate bounds, generic correlated 500 responses, environment knobs, CI dependency auditing,
+  and backup/restore/rollback runbook procedures.
 
 ## Evidence
 
@@ -49,6 +53,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Groq returned HTTP 200 with generated content using the configured model.
 - Running `/ready` reports `api`, `database`, `queue`, `github`, `model`, and `object_storage` as true.
 - Phase 3 focused runtime tests pass: GitHub transport, JWT construction, retries, snapshot fixtures, and durable jobs.
+- Phase 9 verification: full pytest `100 passed`; focused security/config/UI tests `10 passed`; compileall, fresh-output
+  package build, JavaScript syntax, stub scan, and diff checks passed.
 
 ## Open Issues
 
