@@ -24,9 +24,13 @@ CREATE TABLE IF NOT EXISTS audit_events (
 );
 CREATE TABLE IF NOT EXISTS ingestion_jobs (
 delivery_id TEXT NOT NULL, repository_id TEXT NOT NULL, installation_id BIGINT NOT NULL,
-event_name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued',
+event_name TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued', attempts INTEGER NOT NULL DEFAULT 0,
+lease_until TIMESTAMPTZ, last_error TEXT,
 PRIMARY KEY (delivery_id, repository_id)
 );
+ALTER TABLE ingestion_jobs ADD COLUMN IF NOT EXISTS attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ingestion_jobs ADD COLUMN IF NOT EXISTS lease_until TIMESTAMPTZ;
+ALTER TABLE ingestion_jobs ADD COLUMN IF NOT EXISTS last_error TEXT;
 """
 
 
@@ -108,12 +112,12 @@ class PostgresStore:
     def claim_ingestion_job(self):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "SELECT delivery_id,installation_id,repository_id,event_name FROM ingestion_jobs WHERE status IN ('queued','failed') ORDER BY delivery_id FOR UPDATE SKIP LOCKED LIMIT 1"
+                "SELECT delivery_id,installation_id,repository_id,event_name,attempts FROM ingestion_jobs WHERE status IN ('queued','failed') OR (status='running' AND lease_until < NOW()) ORDER BY delivery_id FOR UPDATE SKIP LOCKED LIMIT 1"
             )
             row = cursor.fetchone()
             if row:
                 cursor.execute(
-                    "UPDATE ingestion_jobs SET status='running' WHERE delivery_id=%s AND repository_id=%s",
+                    "UPDATE ingestion_jobs SET status='running', attempts=attempts+1, lease_until=NOW() + INTERVAL '5 minutes' WHERE delivery_id=%s AND repository_id=%s",
                     (row[0], row[2]),
                 )
         self.connection.commit()
@@ -121,21 +125,32 @@ class PostgresStore:
             return None
         from ..providers.webhooks import IngestionJob
 
-        return IngestionJob(row[0], row[1], row[2], row[3])
+        return IngestionJob(row[0], row[1], row[2], row[3], row[4] + 1)
 
     def complete_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
         self._set_job_status(delivery_id, repository_id, "completed")
 
     def fail_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
-        self._set_job_status(delivery_id, repository_id, "failed")
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE ingestion_jobs SET status=CASE WHEN attempts >= 2 THEN 'dead_letter' ELSE 'failed' END, lease_until=NULL WHERE delivery_id=%s AND repository_id=%s",
+                (delivery_id, repository_id),
+            )
+        self.connection.commit()
 
     def _set_job_status(self, delivery_id: str, repository_id: str, status: str) -> None:
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE ingestion_jobs SET status=%s WHERE delivery_id=%s AND repository_id=%s",
+                "UPDATE ingestion_jobs SET status=%s, lease_until=NULL WHERE delivery_id=%s AND repository_id=%s",
                 (status, delivery_id, repository_id),
             )
         self.connection.commit()
+
+    def ingestion_job_status(self) -> dict[str, int]:
+        with self.connection.cursor() as cursor:
+            cursor.execute("SELECT status, COUNT(*) FROM ingestion_jobs GROUP BY status")
+            rows = cursor.fetchall()
+        return {row[0]: row[1] for row in rows}
 
     @staticmethod
     def _repository(repository_id, row):

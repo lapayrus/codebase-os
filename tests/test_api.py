@@ -90,6 +90,15 @@ def test_github_push_webhook_enqueues_one_job(monkeypatch):
     get_settings.cache_clear()
 
 
+def test_job_status_endpoint_reports_durable_queue(monkeypatch):
+    monkeypatch.setenv("CODEBASEOS_ENVIRONMENT", "development")
+    get_settings.cache_clear()
+    response = TestClient(app).get("/api/operations/jobs")
+    assert response.status_code == 200
+    assert "jobs" in response.json()
+    get_settings.cache_clear()
+
+
 def test_memory_read_rejects_repository_outside_access_header(tmp_path: Path):
     (tmp_path / "main.py").write_text("def hello():\n    return 'hi'\n", encoding="utf-8")
     service.add_repository(index_repository(str(tmp_path), "private-memory"))

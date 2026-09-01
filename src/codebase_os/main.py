@@ -82,6 +82,12 @@ def readiness() -> JSONResponse:
     )
 
 
+@app.get("/api/operations/jobs")
+def job_status(http_request: Request) -> dict[str, dict[str, int]]:
+    context_from_request(http_request, get_settings())
+    return {"jobs": github_jobs.status()}
+
+
 @app.post("/api/repositories/index")
 def index(http_request: Request, path: str, name: str | None = None) -> dict:
     try:

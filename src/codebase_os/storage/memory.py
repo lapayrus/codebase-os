@@ -74,6 +74,13 @@ class InMemoryStore:
         self._jobs[key] = (job, "completed")
 
     def fail_ingestion_job(self, delivery_id: str, repository_id: str) -> None:
+        from ..providers.webhooks import IngestionJob
+
         key = (delivery_id, repository_id)
-        job, _ = self._jobs[key]
-        self._jobs[key] = (job, "failed")
+        job, status = self._jobs[key]
+        next_attempt = job.attempts + 1
+        next_status = "dead_letter" if next_attempt >= 2 else "failed"
+        self._jobs[key] = (IngestionJob(job.delivery_id, job.installation_id, job.repository_id, job.event_name, next_attempt), next_status)
+
+    def ingestion_job_status(self) -> dict[str, int]:
+        return {status: sum(1 for _, current in self._jobs.values() if current == status) for status in {current for _, current in self._jobs.values()}}

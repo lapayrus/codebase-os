@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,6 +17,7 @@ class IngestionJob:
     installation_id: int
     repository_id: str
     event_name: str
+    attempts: int = 0
 
 
 class IngestionJobQueue:
@@ -33,9 +35,11 @@ class IngestionJobQueue:
 
 
 class DurableIngestionQueue:
-    def __init__(self, storage: Storage) -> None:
+    def __init__(self, storage: Storage, max_attempts: int = 3, lease_seconds: int = 300) -> None:
         self.storage = storage
         self.jobs: list[IngestionJob] = []
+        self.max_attempts = max_attempts
+        self.lease_seconds = lease_seconds
 
     def enqueue(self, job: IngestionJob) -> bool:
         inserted = self.storage.enqueue_ingestion_job(job)
@@ -51,6 +55,9 @@ class DurableIngestionQueue:
 
     def fail(self, delivery_id: str, repository_id: str) -> None:
         self.storage.fail_ingestion_job(delivery_id, repository_id)
+
+    def status(self) -> dict[str, int]:
+        return self.storage.ingestion_job_status()
 
 
 class InstallationAccess:
