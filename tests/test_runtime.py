@@ -23,9 +23,13 @@ class FakeConnection:
     def __init__(self):
         self.committed = False
         self.executed_schema = False
+        self.client_encoding = None
 
     def cursor(self):
         return FakeCursor(self)
+
+    def execute(self, query):
+        self.client_encoding = query
 
     def commit(self):
         self.committed = True
@@ -63,6 +67,7 @@ def test_initialize_storage_creates_schema_before_serving():
 
     assert connection.committed is True
     assert connection.executed_schema is True
+    assert connection.client_encoding == "SET client_encoding TO 'UTF8'"
 
 
 def test_connection_failure_is_redacted():

@@ -39,6 +39,8 @@ class PostgresStore:
         self.connection = connection
 
     def initialize(self) -> None:
+        if hasattr(self.connection, "execute"):
+            self.connection.execute("SET client_encoding TO 'UTF8'")
         with self.connection.cursor() as cursor:
             cursor.execute(SCHEMA_SQL)
         self.connection.commit()

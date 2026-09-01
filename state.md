@@ -63,6 +63,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
   system pytest temp root was inaccessible even with elevation.
 - Unicode indexing regression fixed by making repository-derived hashing explicitly UTF-8; exact full suite now reports
   `101 passed`.
+- DBngin original `codebaseos` was WIN1252 and could not store `→`; preserved it and created `codebaseos_utf8`.
+  Local `.env` now targets the UTF-8 database, verified with a disposable Unicode evidence insert and cleanup.
 - Phase 10 remaining user-controlled checks are disposable Supabase upload/read/delete, live GitHub delivery, operator
   backup restore, release decision, and production tag.
 

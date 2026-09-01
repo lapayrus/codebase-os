@@ -8,7 +8,10 @@ uv run uvicorn codebase_os.main:app --reload --env-file .env
 ```
 
 Local runtime persistence uses DBngin PostgreSQL.
-Set `CODEBASEOS_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/codebaseos` after starting DBngin.
+Set `CODEBASEOS_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/codebaseos_utf8` after starting DBngin.
+
+The local database must use UTF-8 encoding so repository source can contain Unicode characters.
+The original `codebaseos` database is preserved; use the new `codebaseos_utf8` database for this workspace.
 
 The application initializes the required schema on startup.
 Verify restart persistence with `uv run pytest -q tests/test_postgres_integration.py -m integration`.

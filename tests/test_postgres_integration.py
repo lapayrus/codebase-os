@@ -39,7 +39,7 @@ def test_repository_survives_store_recreation():
 
 
 def test_indexing_is_idempotent_and_replaces_old_evidence():
-    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos")
+    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos_utf8")
     repository_id = f"phase2-index-{uuid4().hex}"
     settings = Settings(database_url=database_url)
     first = RepositoryIndex(repository_id, "C:/repo", "commit-1", files={"main.py": "return 1"})
@@ -55,3 +55,18 @@ def test_indexing_is_idempotent_and_replaces_old_evidence():
         assert [item.commit for item in storage.list_evidence("phase2-test", repository_id)] == ["commit-2"]
     finally:
         storage.delete_repository("phase2-test", repository_id)
+
+
+def test_postgres_accepts_utf8_evidence():
+    database_url = os.getenv("CODEBASEOS_DATABASE_URL", "postgresql://postgres@127.0.0.1:5432/codebaseos_utf8")
+    repository_id = f"utf8-index-{uuid4().hex}"
+    index = RepositoryIndex(repository_id, "C:/repo", "commit-utf8", files={"docs.md": "Flow → session"})
+    storage = build_storage(Settings(database_url=database_url))
+    initialize_storage(storage)
+    service = PersistentCodebaseService(storage)
+
+    try:
+        assert service.index_repository(index, "utf8-test") is IndexDecision.REINDEX
+        assert storage.list_evidence("utf8-test", repository_id)[0].snippet == "Flow → session"
+    finally:
+        storage.delete_repository("utf8-test", repository_id)
