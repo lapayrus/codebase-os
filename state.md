@@ -61,6 +61,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
   checks true, SupabaseSnapshotStore selected, and fresh package artifacts built successfully.
 - The default `uv run pytest -q` command now passes `100` tests by using workspace-local `.pytest-tmp`; the Windows
   system pytest temp root was inaccessible even with elevation.
+- Unicode indexing regression fixed by making repository-derived hashing explicitly UTF-8; exact full suite now reports
+  `101 passed`.
 - Phase 10 remaining user-controlled checks are disposable Supabase upload/read/delete, live GitHub delivery, operator
   backup restore, release decision, and production tag.
 

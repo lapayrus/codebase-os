@@ -13,6 +13,8 @@ uv run python -m compileall -q src
 uv build --out-dir .release-dist
 ```
 
+The indexing suite includes UTF-8 repository content such as arrows and other non-ASCII characters.
+
 ## Production-like configuration
 
 Start with `uv run uvicorn codebase_os.main:app --env-file .env` and verify only status fields:

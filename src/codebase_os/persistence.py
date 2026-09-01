@@ -82,4 +82,4 @@ class PersistentCodebaseService:
 
     @staticmethod
     def _evidence_id(repository: str, commit: str, path: str) -> str:
-        return hashlib.sha256(f"{repository}:{commit}:{path}".encode()).hexdigest()[:32]
+        return hashlib.sha256(f"{repository}:{commit}:{path}".encode("utf-8")).hexdigest()[:32]

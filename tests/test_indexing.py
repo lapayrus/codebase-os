@@ -2,6 +2,13 @@ from codebase_os.indexer import RepositoryIndex
 from codebase_os.indexing import IndexDecision, content_version, decide_index
 from codebase_os.persistence import PersistentCodebaseService
 from codebase_os.storage.memory import InMemoryStore
+from codebase_os.indexer import index_repository
+
+
+def test_indexing_accepts_unicode_source_content(tmp_path):
+    (tmp_path / "docs.md").write_text("Flow → session", encoding="utf-8")
+    index = index_repository(str(tmp_path), "unicode-repo")
+    assert index.files["docs.md"] == "Flow → session"
 
 
 def test_content_version_is_stable_for_file_order():

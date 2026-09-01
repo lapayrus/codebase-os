@@ -41,8 +41,7 @@ class LocalRepositoryProvider:
                 continue
             if any(marker.lower() in content.lower() for marker in SECRET_MARKERS):
                 diagnostics.append(f"Potential secret content detected: {relative}")
-            digest.update(relative.encode())
-            digest.update(content.encode())
+            digest.update(relative.encode("utf-8"))
+            digest.update(content.encode("utf-8"))
             files.append(SnapshotFile(relative, content, size, datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)))
         return RepositorySnapshot("local", repository_id, self.root.name, branch, digest.hexdigest()[:12], tuple(files), tuple(skipped), tuple(diagnostics))
-

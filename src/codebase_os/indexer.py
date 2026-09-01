@@ -53,9 +53,9 @@ def _commit_for(root: Path) -> str:
     digest = hashlib.sha1()
     for path in sorted(root.rglob("*")):
         if path.is_file() and not any(part in IGNORED_DIRS for part in path.parts):
-            digest.update(str(path.relative_to(root)).encode())
-            digest.update(str(path.stat().st_mtime_ns).encode())
-            digest.update(str(path.stat().st_size).encode())
+            digest.update(str(path.relative_to(root)).encode("utf-8"))
+            digest.update(str(path.stat().st_mtime_ns).encode("utf-8"))
+            digest.update(str(path.stat().st_size).encode("utf-8"))
     return digest.hexdigest()[:12]
 
 
@@ -98,4 +98,3 @@ def _imports(text: str) -> list[str]:
         if match:
             values.append(next(group for group in match.groups() if group))
     return values
-
