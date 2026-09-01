@@ -21,8 +21,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 1 durable PostgreSQL runtime is complete.
 - Phase 2 durable indexing pipeline is complete.
 - Phase 3 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-03-github-runtime.md`.
-- Current phase is Phase 9, security, reliability, and deployment, on branch
-  `codex-phase-09-security-reliability`.
+- Current phase is Phase 10, release acceptance, on branch `codex-phase-10-release-acceptance`.
 - Phase 3 is merged through PR #5; Phase 4 branch is `codex-phase-04-supabase-storage`.
 - Phase 4 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-04-supabase-storage.md`.
 - Phase 4 snapshot storage slice is implemented with tenant-safe paths, private Supabase REST access, local adapter,
@@ -45,6 +44,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 9 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-09-security-reliability.md`.
 - Phase 9 adds request-size/rate bounds, generic correlated 500 responses, environment knobs, CI dependency auditing,
   and backup/restore/rollback runbook procedures.
+- Phase 10 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-10-release-acceptance.md`.
+- Phase 10 acceptance evidence is tracked in `docs/release-acceptance.md`.
 
 ## Evidence
 
@@ -55,6 +56,11 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 3 focused runtime tests pass: GitHub transport, JWT construction, retries, snapshot fixtures, and durable jobs.
 - Phase 9 verification: full pytest `100 passed`; focused security/config/UI tests `10 passed`; compileall, fresh-output
   package build, JavaScript syntax, stub scan, and diff checks passed.
+- Phase 10 external Supabase staging mutation checks remain operator-controlled and are intentionally not automated.
+- Phase 10 automated acceptance is complete: DBngin `2 passed`, full suite `100 passed`, readiness HTTP 200 with all
+  checks true, SupabaseSnapshotStore selected, and fresh package artifacts built successfully.
+- Phase 10 remaining user-controlled checks are disposable Supabase upload/read/delete, live GitHub delivery, operator
+  backup restore, release decision, and production tag.
 
 ## Open Issues
 
