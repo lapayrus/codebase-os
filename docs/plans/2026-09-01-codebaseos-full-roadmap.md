@@ -97,11 +97,11 @@ Exit gate: generated answers expose valid citations, reject unsupported claims, 
 
 ## Phase 6 — Authentication and authorization
 
-- [ ] Validate Supabase sessions in hosted environments.
-- [ ] Link GitHub identities, installations, repositories, and tenants.
-- [ ] Restrict development authentication to local mode.
-- [ ] Enforce authorization before retrieval, snippets, memories, and storage objects.
-- [ ] Add session expiry, denied-access audit, and cross-tenant tests.
+- [x] Validate Supabase sessions in hosted environments.
+- [x] Link GitHub identities, installations, repositories, and tenants.
+- [x] Restrict development authentication to local mode.
+- [x] Enforce authorization before retrieval, snippets, memories, and storage objects.
+- [x] Add session expiry, denied-access audit, and cross-tenant tests.
 
 Exit gate: production requests require valid sessions and cannot cross tenant or repository boundaries.
 

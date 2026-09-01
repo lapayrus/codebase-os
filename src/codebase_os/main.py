@@ -21,6 +21,11 @@ from .storage.snapshots import build_snapshot_store
 app = FastAPI(title="CodebaseOS", version="0.1.0", description="Evidence-first repository intelligence")
 
 
+@app.exception_handler(PermissionError)
+async def permission_error_handler(request: Request, exc: PermissionError) -> JSONResponse:
+    return JSONResponse(status_code=401, content={"detail": str(exc)})
+
+
 def build_runtime_gateway() -> ModelGateway:
     try:
         return ModelGateway(build_model_provider(get_settings()))
@@ -81,7 +86,7 @@ def readiness() -> JSONResponse:
 def index(http_request: Request, path: str, name: str | None = None) -> dict:
     try:
         repo = index_repository(path, name)
-        context = context_from_request(http_request)
+        context = context_from_request(http_request, get_settings())
         decision = persistent_service.index_repository(repo, context.tenant_id)
         return {"name": repo.name, "commit": repo.commit, "files": len(repo.files), "symbols": len(repo.symbols), "status": decision.value}
     except ValueError as exc:
@@ -110,7 +115,7 @@ async def github_webhook(request: Request) -> dict[str, int]:
 
 @app.get("/api/repositories")
 def repositories(http_request: Request) -> list[dict]:
-    context = context_from_request(http_request)
+    context = context_from_request(http_request, get_settings())
     return [
         {"name": r.name, "commit": r.commit, "files": len(r.files), "symbols": len(r.symbols)}
         for r in service.repositories.values()
@@ -120,7 +125,7 @@ def repositories(http_request: Request) -> list[dict]:
 
 @app.delete("/api/repositories/{repository}", status_code=204)
 def delete_repository(repository: str, http_request: Request) -> None:
-    context = context_from_request(http_request)
+    context = context_from_request(http_request, get_settings())
     if not can_access(context, repository):
         raise HTTPException(status_code=403, detail="Repository access denied")
     if repository not in service.repositories:
@@ -137,7 +142,7 @@ def delete_repository(repository: str, http_request: Request) -> None:
 @app.post("/api/query")
 def query(request: QueryRequest, http_request: Request):
     try:
-        context = context_from_request(http_request)
+        context = context_from_request(http_request, get_settings())
         repository = request.repository or next(iter(service.repositories), None)
         if repository and not can_access(context, repository):
             raise HTTPException(status_code=403, detail="Repository access denied")
@@ -152,7 +157,7 @@ def query(request: QueryRequest, http_request: Request):
 
 @app.post("/api/memories")
 def create_memory(request: MemoryRequest, http_request: Request):
-    context = context_from_request(http_request)
+    context = context_from_request(http_request, get_settings())
     if not can_access(context, request.repository):
         raise HTTPException(status_code=403, detail="Repository access denied")
     if request.repository not in service.repositories:
@@ -163,7 +168,7 @@ def create_memory(request: MemoryRequest, http_request: Request):
 
 @app.get("/api/memories/{repository}")
 def memories(repository: str, http_request: Request):
-    context = context_from_request(http_request)
+    context = context_from_request(http_request, get_settings())
     if not can_access(context, repository):
         raise HTTPException(status_code=403, detail="Repository access denied")
     return service.memories.get(repository, [])
