@@ -33,6 +33,8 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 5 is merged through PR #7; Phase 6 branch is `codex-phase-06-auth-tenancy`.
 - Phase 6 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-06-auth-tenancy.md`.
 - Phase 6 authentication boundary is implemented with production JWT verification and local-only header auth.
+- Phase 6 is merged through PR #8; Phase 7 branch is `codex-phase-07-job-operations`.
+- Phase 7 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-07-job-operations.md`.
 
 ## Evidence
 
