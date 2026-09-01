@@ -2,6 +2,8 @@ import httpx
 import pytest
 
 from codebase_os.storage.snapshots import InMemorySnapshotStore, SupabaseSnapshotStore, snapshot_path
+from codebase_os.storage.snapshots import build_snapshot_store
+from codebase_os.config import Settings
 
 
 def test_snapshot_path_is_tenant_scoped_and_rejects_traversal():
@@ -33,3 +35,21 @@ def test_supabase_snapshot_store_uses_private_authenticated_object_api():
     store.delete("tenant", "repo", "abc")
     assert all(request.headers["authorization"] == "Bearer server-key" for request in calls)
     assert all("tenants/tenant/repositories/repo/abc.snapshot" in str(request.url) for request in calls)
+
+
+def test_development_without_server_key_falls_back_to_local_snapshot_store():
+    store = build_snapshot_store(Settings(
+        environment="development",
+        object_storage_provider="supabase",
+        supabase_url="https://project.supabase.co",
+    ))
+    assert isinstance(store, InMemorySnapshotStore)
+
+
+def test_production_without_server_key_fails_closed():
+    with pytest.raises(ValueError, match="server key"):
+        build_snapshot_store(Settings(
+            environment="production",
+            object_storage_provider="supabase",
+            supabase_url="https://project.supabase.co",
+        ))

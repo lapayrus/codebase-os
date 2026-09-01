@@ -89,6 +89,8 @@ def build_snapshot_store(settings: Settings) -> SnapshotStore:
     if settings.object_storage_provider != "supabase" or not settings.supabase_url:
         raise ValueError("Supabase snapshot storage requires a project URL")
     if settings.object_storage_secret_key is None:
+        if settings.environment != "production":
+            return InMemorySnapshotStore()
         raise ValueError("Supabase snapshot storage requires a server key")
     return SupabaseSnapshotStore(
         settings.supabase_url,

@@ -64,6 +64,8 @@ Snapshot objects use `tenants/<tenant>/repositories/<owner>/<repo>/<commit>.snap
 public URLs.
 Hosted Supabase Storage requires a server-side storage key with object insert, select, update, and delete permissions;
 never place that key in browser configuration.
+In development, a missing server key selects the local snapshot adapter so the API can start without pretending hosted
+storage is connected.
 
 ## Data controls
 

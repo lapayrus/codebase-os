@@ -21,7 +21,7 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 1 durable PostgreSQL runtime is complete.
 - Phase 2 durable indexing pipeline is complete.
 - Phase 3 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-03-github-runtime.md`.
-- Current phase is Phase 6, authentication and tenancy.
+- Current phase is Phase 8, production UI, on branch `codex-phase-08-production-ui`.
 - Phase 3 is merged through PR #5; Phase 4 branch is `codex-phase-04-supabase-storage`.
 - Phase 4 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-04-supabase-storage.md`.
 - Phase 4 snapshot storage slice is implemented with tenant-safe paths, private Supabase REST access, local adapter,
@@ -35,6 +35,12 @@ Execute the approved CodebaseOS full production roadmap, beginning with durable 
 - Phase 6 authentication boundary is implemented with production JWT verification and local-only header auth.
 - Phase 6 is merged through PR #8; Phase 7 branch is `codex-phase-07-job-operations`.
 - Phase 7 child plan is ready at `docs/plans/2026-09-01-codebaseos-phase-07-job-operations.md`.
+- Phase 7 is merged through PR #9; Phase 8 child plan is ready at
+  `docs/plans/2026-09-01-codebaseos-phase-08-production-ui.md`.
+- Phase 8 adds the production repository intelligence workspace with repository controls, grounded answer rendering,
+  evidence spans, memory context, deletion, loading states, permission errors, responsive layout, and accessibility.
+- Phase 8 startup behavior uses the local snapshot adapter in development when the Supabase server key is absent;
+  production still fails closed with `CODEBASEOS_OBJECT_STORAGE_SECRET_KEY` missing.
 
 ## Evidence
 

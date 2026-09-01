@@ -117,12 +117,12 @@ Exit gate: webhook jobs survive restarts, retry safely, and expose actionable fa
 
 ## Phase 8 — Production UI
 
-- [ ] Add authenticated login and session handling.
-- [ ] Add repository selection and indexing status.
-- [ ] Add query results with citations, confidence, caveats, and abstention.
-- [ ] Add memory and repository deletion controls.
-- [ ] Add loading, empty, error, and permission-denied states.
-- [ ] Add accessibility, responsive layout, and browser smoke tests.
+- [x] Add authenticated session status and permission-denied handling.
+- [x] Add repository selection and local indexing status.
+- [x] Add query results with citations, confidence, caveats, and abstention.
+- [x] Add memory and repository deletion controls.
+- [x] Add loading, empty, error, and permission-denied states.
+- [x] Add accessibility, responsive layout, and static browser-contract tests.
 
 Exit gate: an authenticated user can select, index, query, inspect citations, and delete an authorized repository.
 
